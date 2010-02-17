@@ -1,0 +1,26 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Provides a views field handler class for the sticky_notes priority field.
+ */
+
+/**
+ * Views field handler for the field priority.
+ *
+ * @package default
+ * @author Ralf Baumbach
+ */
+
+class views_handler_field_sticky_notes_priority extends views_handler_field {
+  
+  function construct() {
+    parent::construct();
+    $this->map_priority = array(0 => t('Low'), 1 => t('Normal'), '2' => t('High'));
+  }
+  
+  function render($values) {
+    return $this->map_priority[$values->{$this->table . '_priority'}];
+  }
+}

@@ -1,0 +1,59 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Install, uninstall and update sticky_notes module
+ */
+
+/**
+ * Implementation of hook_install
+ *
+ * @return void
+ * @author Ralf Baumbach
+ */
+
+function sticky_notes_install() {
+  drupal_install_schema('sticky_notes');
+}
+
+/**
+ * Implementation of hook_uninstall
+ *
+ * @return void
+ * @author Ralf Baumbach
+ */
+
+function sticky_notes_uninstall() {
+  drupal_uninstall_schema('sticky_notes');
+}
+
+/**
+ * Implementation of hook_schema
+ *
+ * @return void
+ * @author Ralf Baumbach
+ */
+
+function sticky_notes_schema() {
+  
+  $schema;
+  
+  $schema['node_sticky_note'] = array(
+    'fields' => array(
+      'nid'           => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'vid'           => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'position_x'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'position_y'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'position_z'    => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+      'link_path'     => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'link_pattern'  => array('type' => 'varchar', 'length' => 255, 'not null' => TRUE, 'default' => ''),
+      'link_scope'    => array('type' => 'varchar', 'length' => 10, 'not null' => TRUE, 'default' => 0),
+      'priority'      => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => 0),
+    ),
+    'primary' => array('vid'),
+  );
+  
+  return $schema;
+  
+}
