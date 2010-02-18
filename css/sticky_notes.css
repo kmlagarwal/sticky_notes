@@ -41,7 +41,7 @@ span.sticky-note-nid {
 
 /* The notes body text */
 div.sticky-notes-note-item-body {
-  font-size: 14px;
+  font-size: 12px;
   height: 125px;
   padding: 5px;
 }
@@ -90,8 +90,9 @@ div.sticky-notes-note-item-actions a.popups-processed:after {
 
 div.sticky-notes-note-item-author {
   float: right; /* LTR */
-  font-size: 12px;
-  width: 100px;
+  font-size: 10px;
+  text-align: right;
+  width: 100%;
 }
 
 /* The add button */

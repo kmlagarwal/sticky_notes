@@ -519,6 +519,7 @@ function sticky_notes_init() {
     drupal_add_js(array('sticky_notes' => array(
       'current_pattern' => urlencode($menu_item['path']),
       'current_path' => urlencode($menu_item['href']),
+      'minimal_z_index' => variable_get('sticky_notes_minimal_zindex', STICKY_NOTES_DEFAULT_ZINDEX),
     )), 'setting');
   }
   

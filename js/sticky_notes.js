@@ -40,7 +40,8 @@ var zIndex;
 // Init the sticky notes, attach behaviours, update page counter ...
 function sticky_notes_init() {
   
-  zIndex = 0;
+  zIndex = Drupal.settings.sticky_notes.minimal_z_index;
+  
   elements = 'div.sticky-notes-note-item-wrapper';
   
   // iterate over all notes to find the one with the highest z-index
