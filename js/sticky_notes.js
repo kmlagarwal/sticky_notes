@@ -122,6 +122,7 @@ StickyNotes.init = function() {
 StickyNotes.showGrid = function() {
   
   var window_width = $(window).width();
+  var vertical_offset = $(window).scrollTop()
   var offset = 50;
   var cols = 0;
   var rows = 0;
@@ -159,7 +160,7 @@ StickyNotes.showGrid = function() {
       cols = 0;
       left = cols * (150 + offset) + offset;
     }
-    top = rows * (150 + offset) + offset;
+    top = vertical_offset + rows * (150 + offset) + offset;
     
     // and trigger the aninmation
     $(this).animate({'left': left, 'top': top}, "slow");
