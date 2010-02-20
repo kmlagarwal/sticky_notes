@@ -11,7 +11,7 @@ Drupal 6.x
 Popups-API 6.x-2.0-alpha5
 
 # Installation
-Checkout the module from github: git clone http://github.com/berliner/drupal-sticky-notes.git
+Checkout the module from github: git clone http://github.com/berliner/sticky_notes.git
 Copy the folder to your modules directory, normally under sites/all/modules.
 Go to admin/build/modules and enable the sticky notes module.
 Go to admin/user/permissions and set the permissions.
