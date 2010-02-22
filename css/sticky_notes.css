@@ -139,6 +139,10 @@ div#sticky-notes-info-box-wrapper .content {
   padding: 3px 5px;
 }
 
+div#sticky-notes-info-box-wrapper .content * {
+  margin: 0px;
+}
+
 div#sticky-notes-info-box-wrapper .hide-info-box .content {
   display: none;
 }
