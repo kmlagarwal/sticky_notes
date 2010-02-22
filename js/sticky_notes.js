@@ -30,6 +30,15 @@ $(document).ready(function() {
     return false;
   });
   
+  // implement info box display on hover
+  $('div#sticky-notes-info-box-wrapper').bind('mouseenter', function() {
+    $('#sticky-notes-info-box .content').fadeIn('fast');
+    return false;
+  }).bind('mouseleave', function() {
+    $('#sticky-notes-info-box .content').fadeOut('fast');
+    return false;
+  });
+  
   // initial loading of all sticky notes for this page
   StickyNotes.loadPage();
   

@@ -38,6 +38,31 @@ function sticky_notes_admin_form($form_state) {
     '#default_value' => variable_get('sticky_notes_show_on_admin', STICKY_NOTES_DEFAULT_SHOW_ON_ADMIN),
   );
   
+  $form['info_box'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Settings for the sticky notes info box'),
+  );
+  
+  $form['info_box']['info_box_corner'] = array(
+    '#type' => 'select',
+    '#title' => t('Corner'),
+    '#options' => array(
+      STICKY_NOTES_INFO_BOX_CORNER_TOP_LEFT => t('top left'),
+      STICKY_NOTES_INFO_BOX_CORNER_TOP_RIGHT => t('top right'),
+      STICKY_NOTES_INFO_BOX_CORNER_BOTTOM_LEFT => t('bottom left'),
+      STICKY_NOTES_INFO_BOX_CORNER_BOTTOM_RIGHT => t('bottom right'),
+    ),
+    '#description' => t('Where to show the info box.'),
+    '#default_value' => variable_get('sticky_notes_info_box_corner', STICKY_NOTES_DEFAULT_INFO_BOX_CORNER),
+  );
+  
+  $form['info_box']['info_box_hide'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide info box'),
+    '#description' => t('Check this, if you want that the info box wille be hidden until you move your mouse in the selectd corner.'),
+    '#default_value' => variable_get('sticky_notes_info_box_hide', STICKY_NOTES_DEFAULT_INFO_BOX_HIDE),
+  );
+  
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
@@ -77,5 +102,6 @@ function sticky_notes_admin_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   variable_set('sticky_notes_minimal_zindex', $values['minimal_zindex']);
   variable_set('sticky_notes_show_on_admin', $values['show_on_admin']);
-  
+  variable_set('sticky_notes_info_box_corner', $values['info_box_corner']);
+  variable_set('sticky_notes_info_box_hide', $values['info_box_hide']);
 }

@@ -100,19 +100,47 @@ div.sticky-notes-note-item-author {
   width: 100%;
 }
 
-/* The add button */
-div#sticky-notes-add-note-button-wrapper {
+/* The info box */
+div#sticky-notes-info-box-wrapper {
   position: relative;
 }
 
-div#sticky-notes-add-note-button {
-  background-color: lightgray;
+div#sticky-notes-info-box-wrapper .top_left {
+  top: 0px;
+  left: 0px;
+}
+
+div#sticky-notes-info-box-wrapper .top_right {
+  top: 0px;
+  right: 0px;
+}
+
+div#sticky-notes-info-box-wrapper .bottom_left {
   bottom: 0px;
+  left: 0px;
+}
+
+div#sticky-notes-info-box-wrapper .bottom_right {
+  bottom: 0px;
+  right: 0px;
+}
+
+div#sticky-notes-info-box {
+  min-height: 40px;
+  min-width: 60px;
+  margin: 0px;
+  padding: 0px;
+  position: fixed;
+  z-index: 6;
+}
+div#sticky-notes-info-box-wrapper .content {
+  background-color: lightgray;
   margin: 0px;
   padding: 3px 5px;
-  position: fixed;
-  right: 0px;
-  z-index: 6;
+}
+
+div#sticky-notes-info-box-wrapper .hide-info-box .content {
+  display: none;
 }
 
 div#sticky-notes-add-note-button a {

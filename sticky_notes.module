@@ -18,10 +18,17 @@ define('STICKY_NOTES_PRIORITY_LOW', 0);
 define('STICKY_NOTES_PRIORITY_NORMAL', 1);
 define('STICKY_NOTES_PRIORITY_HIGH', 2);
 
+define('STICKY_NOTES_INFO_BOX_CORNER_TOP_LEFT', 'top_left');
+define('STICKY_NOTES_INFO_BOX_CORNER_TOP_RIGHT', 'top_right');
+define('STICKY_NOTES_INFO_BOX_CORNER_BOTTOM_LEFT', 'bottom_left');
+define('STICKY_NOTES_INFO_BOX_CORNER_BOTTOM_RIGHT', 'bottom_right');
+
 define('STICKY_NOTES_DEFAULT_ZINDEX', 50);
 define('STICKY_NOTES_DEFAULT_SHOW_ON_ADMIN', 0);
 define('STICKY_NOTES_DEFAULT_PRIORITY', STICKY_NOTES_PRIORITY_NORMAL);
 define('STICKY_NOTES_DEFAULT_SCOPE', STICKY_NOTES_SCOPE_LINK_PATH);
+define('STICKY_NOTES_DEFAULT_INFO_BOX_CORNER', STICKY_NOTES_INFO_BOX_CORNER_BOTTOM_RIGHT);
+define('STICKY_NOTES_DEFAULT_INFO_BOX_HIDE', 0);
 
 /**
  * Implementation of hook_help().
@@ -179,9 +186,9 @@ function sticky_notes_theme() {
       'arguments' => array('items' => NULL),
       'path' => drupal_get_path('module', 'sticky_notes') . '/templates',
     ),
-    'sticky_notes_add_button' => array(
-      'template' => 'sticky-notes-add-button',
-      'arguments' => array('link' => NULL),
+    'sticky_notes_info_box' => array(
+      'template' => 'sticky-notes-info-box',
+      'arguments' => array('classes' => NULL, 'link' => NULL),
       'path' => drupal_get_path('module', 'sticky_notes') . '/templates',
     ),
     'sticky_notes_note' => array(
@@ -542,8 +549,18 @@ function sticky_notes_preprocess_page(&$vars) {
     
     $menu_item = menu_get_item();
     $link = url('node/add/sticky-notes', array('query' => array('pattern' => $menu_item['path'], 'path' => $menu_item['href'])));
-    $vars['header'] .= theme('sticky_notes_add_button', $link);
   }
+  
+  if (user_access('view sticky notes')) {
+    
+    $classes = variable_get('sticky_notes_info_box_corner', STICKY_NOTES_INFO_BOX_CORNER_BOTTOM_RIGHT);
+    if (variable_get('sticky_notes_info_box_hide', STICKY_NOTES_DEFAULT_INFO_BOX_HIDE)) {
+      $classes .= ' hide-info-box';
+    }
+    
+    $vars['header'] .= theme('sticky_notes_info_box', $classes, $link);
+  }
+  
 }
 
 /**
