@@ -189,7 +189,7 @@ function sticky_notes_theme() {
     ),
     'sticky_notes_info_box' => array(
       'template' => 'sticky-notes-info-box',
-      'arguments' => array('classes' => NULL, 'link' => NULL),
+      'arguments' => array('classes' => NULL, 'add_link' => NULL),
       'path' => drupal_get_path('module', 'sticky_notes') . '/templates',
     ),
     'sticky_notes_note' => array(
@@ -543,6 +543,7 @@ function sticky_notes_init() {
  */
 
 function sticky_notes_preprocess_page(&$vars) {
+  
   if (user_access('create sticky notes') || user_access('administer sticky notes')) {
     
     if (arg(0) == 'admin' && !variable_get('sticky_notes_show_on_admin', STICKY_NOTES_DEFAULT_SHOW_ON_ADMIN)) {

@@ -1,7 +1,13 @@
 // $Id$
 
+/**
+* The sticky notes namespace
+*/
 StickyNotes = function(){};
 
+/**
+* Some variables
+*/
 StickyNotes.query;
 StickyNotes.path;
 StickyNotes.positions = [];
@@ -10,6 +16,13 @@ StickyNotes.container_selector;
 StickyNotes.zIndex;
 
 $(document).ready(function() {
+  StickyNotes.startup();
+});
+
+/**
+* Startup function, set up sticky notes and attach callbacks
+*/
+StickyNotes.startup = function() {
   
   StickyNotes.container_selector = Drupal.settings.sticky_notes.container_selector;
   StickyNotes.path = Drupal.settings.sticky_notes.current_path;
@@ -44,7 +57,7 @@ $(document).ready(function() {
   // initial loading of all sticky notes for this page
   StickyNotes.loadPage();
   
-});
+}
 
 /**
 * Load the notes for this page

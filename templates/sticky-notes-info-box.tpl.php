@@ -2,9 +2,9 @@
   <div id="sticky-notes-info-box" class="<?php if ($classes) { print $classes; } ?>">
     <div class="content">
       
-      <?php if ($sticky_notes_add_button): ?>
+      <?php if ($add_link): ?>
         <div id="sticky-notes-add-note-button">
-          <a href="<?php print $link; ?>">+ Add Note</a>
+          <a href="<?php print $add_link; ?>">+ Add Note</a>
         </div>
         <br />
       <?php endif; ?>
