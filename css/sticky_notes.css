@@ -141,6 +141,7 @@ div#sticky-notes-info-box-wrapper .content {
 
 div#sticky-notes-info-box-wrapper .content * {
   margin: 0px;
+  padding: 0px;
 }
 
 div#sticky-notes-info-box-wrapper .hide-info-box .content {

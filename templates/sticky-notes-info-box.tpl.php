@@ -8,8 +8,10 @@
         </div>
         <br />
       <?php endif; ?>
+      
       <div id="sticky-notes-page-count"></div>
       <br />
+      
       <div id="sticky-notes-options">
         <a id="sticky-notes-options-show-all" href="#">show all</a>
       </div>
