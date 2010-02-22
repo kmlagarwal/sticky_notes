@@ -133,16 +133,15 @@ div#sticky-notes-info-box {
   position: fixed;
   z-index: 6;
 }
+
+div#sticky-notes-info-box div {
+  display: block;
+}
+
 div#sticky-notes-info-box-wrapper .content {
   background-color: lightgray;
   margin: 0px;
   padding: 3px 5px;
-}
-
-div#sticky-notes-info-box-wrapper .content br {
-  margin: 0px;
-  padding: 0px;
-  line-height: 0px;
 }
 
 div#sticky-notes-info-box-wrapper .hide-info-box .content {
