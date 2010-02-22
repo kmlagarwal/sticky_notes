@@ -46,7 +46,7 @@ StickyNotes.startup = function() {
   });
   
   // implement info box display on hover
-  $('div#sticky-notes-info-box-wrapper').bind('mouseenter', function() {
+  $('div#sticky-notes-info-box-wrapper .hide-info-box').bind('mouseenter', function() {
     $('#sticky-notes-info-box .content').fadeIn('fast');
     return false;
   }).bind('mouseleave', function() {
