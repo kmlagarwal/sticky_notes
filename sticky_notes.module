@@ -29,6 +29,7 @@ define('STICKY_NOTES_DEFAULT_PRIORITY', STICKY_NOTES_PRIORITY_NORMAL);
 define('STICKY_NOTES_DEFAULT_SCOPE', STICKY_NOTES_SCOPE_LINK_PATH);
 define('STICKY_NOTES_DEFAULT_INFO_BOX_CORNER', STICKY_NOTES_INFO_BOX_CORNER_BOTTOM_RIGHT);
 define('STICKY_NOTES_DEFAULT_INFO_BOX_HIDE', 0);
+define('STICKY_NOTES_DEFAULT_CONTAINER_SELECTOR', 'body');
 
 /**
  * Implementation of hook_help().
@@ -526,6 +527,7 @@ function sticky_notes_init() {
     drupal_add_js(array('sticky_notes' => array(
       'current_pattern' => urlencode($menu_item['path']),
       'current_path' => urlencode($menu_item['href']),
+      'container_selector' => variable_get('sticky_notes_container_selector', STICKY_NOTES_DEFAULT_CONTAINER_SELECTOR),
       'minimal_z_index' => variable_get('sticky_notes_minimal_zindex', STICKY_NOTES_DEFAULT_ZINDEX),
     )), 'setting');
   }

@@ -6,10 +6,12 @@ StickyNotes.query;
 StickyNotes.path;
 StickyNotes.positions = [];
 StickyNotes.elements_selector = 'div.sticky-notes-note-item-wrapper';
+StickyNotes.container_selector;
 StickyNotes.zIndex;
 
 $(document).ready(function() {
   
+  StickyNotes.container_selector = Drupal.settings.sticky_notes.container_selector;
   StickyNotes.path = Drupal.settings.sticky_notes.current_path;
   StickyNotes.query = 'pattern=' + Drupal.settings.sticky_notes.current_pattern + '&path=' + StickyNotes.path;
   
@@ -49,8 +51,10 @@ $(document).ready(function() {
 */
 StickyNotes.loadPage = function() {
   $.getJSON('/sticky-notes/load?' + StickyNotes.query, function(data) {
-    $('body').append(data);
-    StickyNotes.init();
+    if ($(StickyNotes.container_selector).length == 1) {
+      $(StickyNotes.container_selector).append(data);
+      StickyNotes.init();
+    }
   });
 }
 
