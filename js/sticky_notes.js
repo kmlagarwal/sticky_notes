@@ -78,8 +78,10 @@ StickyNotes.init = function() {
     if (StickyNotes.zIndex > $(this).css('z-index')) {
       $(this).css('z-index', ++StickyNotes.zIndex);
     }
-    var nid = parseInt($(this).find('span.sticky-note-nid').html());
-    StickyNotes.savePosition(nid, $(this).css('left').replace('px', ''), $(this).css('top').replace('px', ''));
+    if ($(this).hasClass('ui-draggable')) {
+      var nid = parseInt($(this).find('span.sticky-note-nid').html());
+      StickyNotes.savePosition(nid, $(this).css('left').replace('px', ''), $(this).css('top').replace('px', ''));
+    }
     return false;
   });
   
