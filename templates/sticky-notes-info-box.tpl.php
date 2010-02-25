@@ -11,7 +11,10 @@
       <div id="sticky-notes-page-count"></div>
       
       <div id="sticky-notes-options">
-        <a id="sticky-notes-options-show-all" href="#"><?php print t('show all'); ?></a>
+        <a id="sticky-notes-options-display-expose" href="#"><?php print t('Exposé'); ?></a>
+        |
+        <a id="sticky-notes-options-display-hidden" href="#"><?php print t('Hide notes'); ?></a>
+        <a id="sticky-notes-options-display-normal" href="#"><?php print t('Show notes'); ?></a>
       </div>
       
     </div>

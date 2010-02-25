@@ -1,5 +1,7 @@
 <div class="sticky-notes-note-item-wrapper <?php if ($note_can_be_modified) { print 'editable'; } ?>" style="position: absolute; top: <?php print $node->position_y; ?>px; left: <?php print $node->position_x; ?>px; z-index: <?php print $node->position_z; ?>;">
   
+  <div class="sticky-notes-note-item-priority"><?php print $priority_image; ?></div>
+  
   <div class="sticky-notes-note-item-actions-wrapper">
     <div class="sticky-notes-note-item-actions">
       <?php if ($note_can_be_modified): ?>

@@ -194,7 +194,7 @@ function sticky_notes_theme() {
     ),
     'sticky_notes_note' => array(
       'template' => 'sticky-notes-note',
-      'arguments' => array('node' => NULL),
+      'arguments' => array('node' => NULL, 'priority_image' => NULL),
       'path' => drupal_get_path('module', 'sticky_notes') . '/templates',
     ),
   );
@@ -583,6 +583,7 @@ function sticky_notes_preprocess(&$vars, $hook) {
     $vars['author'] = check_plain($vars['node']->name);
     $vars['note_can_be_modified'] = sticky_notes_access('update', $vars['node'], $user);
     $vars['note_can_be_deleted'] = sticky_notes_access('delete', $vars['node'], $user);
+    $vars['priority_image'] = '<img src="' . drupal_get_path('module', 'sticky_notes') . '/images/pin-' . $vars['node']->priority . '.gif" />';
   }
 }
 

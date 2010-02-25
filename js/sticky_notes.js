@@ -54,6 +54,29 @@ StickyNotes.startup = function() {
     return false;
   });
   
+  // show all sticky notes in a grid to give overview
+  $('#sticky-notes-options-display-expose').click(function() {
+    $(StickyNotes.elements_selector).show();
+    StickyNotes.showGrid(StickyNotes.elements_selector);
+    return false;
+  });
+  
+  // hide all notes on the current page when the link is clicked
+  $('#sticky-notes-options-display-hidden').click(function() {
+    $(StickyNotes.elements_selector).hide();
+    $(this).hide();
+    $('#sticky-notes-options-display-normal').show();
+    return false;
+  });
+  
+  // show all notes on the current page when the link is clicked
+  $('#sticky-notes-options-display-normal').click(function() {
+    $(StickyNotes.elements_selector).show();
+    $(this).hide();
+    $('#sticky-notes-options-display-hidden').show();
+    return false;
+  });
+  
   // initial loading of all sticky notes for this page
   StickyNotes.loadPage();
   
@@ -132,11 +155,6 @@ StickyNotes.init = function() {
     }
     $('#popups-overlay').css('z-index', StickyNotes.zIndex + 1);
     return false;
-  });
-  
-  // show all sticky notes in a grid to give overview
-  $('#sticky-notes-options-show-all').click(function() {
-    StickyNotes.showGrid(StickyNotes.elements_selector);
   });
   
   // update the notes page count

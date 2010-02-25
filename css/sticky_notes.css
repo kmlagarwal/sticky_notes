@@ -16,6 +16,18 @@ div.sticky-notes-note-item-wrapper {
   width: 150px;
 }
 
+.sticky-notes-note-item-priority {
+  position: absolute;
+  top: -12px;
+  left: -10px;
+  height: 19px;
+  overflow: hidden;
+}
+
+.sticky-notes-note-item-priority img {
+  width: 20px;
+}
+
 /* An individual sticky note */
 div.sticky-notes-note-item {
   background-color: #FDFB8C;
@@ -154,6 +166,10 @@ div#sticky-notes-add-note-button a {
   font-weight: normal;
   font-size: 16px;
   text-decoration: none;
+}
+
+a#sticky-notes-options-display-normal {
+  display: none;
 }
 
 /* try to style the node edit popup */
