@@ -219,10 +219,8 @@ function sticky_notes_views_default_views() {
   $handler->override_option('access', array(
     'type' => 'none',
   ));
-  $handler->override_option('cache', array(
-    'type' => 'none',
-  ));
   $handler->override_option('title', 'Sticky Notes');
+  $handler->override_option('use_ajax', TRUE);
   $handler->override_option('use_pager', 'mini');
   $handler->override_option('style_plugin', 'table');
   $handler->override_option('style_options', array(
@@ -272,13 +270,22 @@ function sticky_notes_views_default_views() {
       'group' => '0',
       'exposed' => FALSE,
       'expose' => array(
-        'operator' => FALSE,
-        'label' => '',
+        'operator' => 'type_op',
+        'label' => 'Node: Type',
+        'use_operator' => 0,
+        'identifier' => 'type',
+        'optional' => 1,
+        'single' => 1,
+        'remember' => 0,
+        'reduce' => 0,
       ),
       'id' => 'type',
       'table' => 'node',
       'field' => 'type',
       'relationship' => 'none',
+      'override' => array(
+        'button' => 'Use default',
+      ),
     ),
     'uid' => array(
       'operator' => 'in',

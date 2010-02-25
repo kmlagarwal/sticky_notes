@@ -32,6 +32,7 @@ function sticky_notes_views_data() {
     ),
     'filter' => array(
       'handler' => 'views_handler_filter_sticky_notes_priority',
+      'allow empty' => FALSE,
     ),
   );
   return $data;
