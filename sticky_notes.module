@@ -37,7 +37,11 @@ define('STICKY_NOTES_DEFAULT_CONTAINER_SELECTOR', 'body');
 function sticky_notes_help($path, $arg) {
   switch ($path) {
     case 'admin/help#sticky_notes':
-      return '<p>'. t('This module provides sticky notes for Drupal site.') .'</p>';
+      return '<p>'. t('This module provides sticky notes for Drupal sites.') .'</p>';
+      break;
+    case 'admin/settings/sticky_notes':
+      return '<p>'. t('On this page you can set up the sticky notes module in order to make it work flawlessly on your site.');
+      break;
   }
 }
 
@@ -79,7 +83,7 @@ function sticky_notes_menu() {
   // administration pages
   $items['admin/settings/sticky_notes'] = array(
     'title' => 'Sticky Notes',
-    'description' => 'Set preferences for sticky notes.',
+    'description' => 'Set the preferences for sticky notes.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('sticky_notes_admin_form'),
     'access arguments' => array('administer sticky notes'),
@@ -381,6 +385,10 @@ function sticky_notes_form(&$node) {
     unset($scope_options[STICKY_NOTES_SCOPE_LINK_PATTERN]);
   }
   
+  if (empty($_REQUEST['path'])) {
+    unset($scope_options[STICKY_NOTES_SCOPE_LINK_PATH]);
+  }
+  
   $form['link_scope'] = array(
     '#type' => 'radios',
     '#title' => t('Visibility'),
@@ -390,6 +398,10 @@ function sticky_notes_form(&$node) {
   
   return $form;
   
+}
+
+function sticky_notes_form_validate(&$form, &$form_state) {
+  d('hi');
 }
 
 /**
@@ -430,9 +442,10 @@ function sticky_notes_form_alter(&$form, &$form_state, $form_id) {
     $form['#prefix'] = '<div id="sticky-notes-form">';
     $form['#suffix'] = '</div>';
     
-    // add a wrapper for th ebuttons as well
+    // add a wrapper for the buttons as well
     $form['buttons']['#prefix'] = '<div class="sticky-notes-form-buttons">';
     $form['buttons']['#suffix'] = '</div>';
+    
   }
   
 }
@@ -466,8 +479,9 @@ function sticky_notes_popups() {
       'a[href~=/node/add/sticky-notes]'  => array(  // add sticky note
         'noUpdate' => TRUE,
         'updateMethod' => 'none',
-        'doneTest' => 'node/*',
-        'noMessage' => TRUE
+        'doneTest' => 'node',
+        'noMessage' => TRUE,
+        'hijackDestination' => FALSE,
       ),
     ),
   );
@@ -551,7 +565,7 @@ function sticky_notes_preprocess_page(&$vars) {
     }
     
     $menu_item = menu_get_item();
-    $link = url('node/add/sticky-notes', array('query' => array('pattern' => $menu_item['path'], 'path' => $menu_item['href'])));
+    $link = url('node/add/sticky-notes');
   }
   
   if (user_access('view sticky notes')) {
@@ -583,7 +597,7 @@ function sticky_notes_preprocess(&$vars, $hook) {
     $vars['author'] = check_plain($vars['node']->name);
     $vars['note_can_be_modified'] = sticky_notes_access('update', $vars['node'], $user);
     $vars['note_can_be_deleted'] = sticky_notes_access('delete', $vars['node'], $user);
-    $vars['priority_image'] = '<img src="' . drupal_get_path('module', 'sticky_notes') . '/images/pin-' . $vars['node']->priority . '.gif" />';
+    $vars['priority_image'] = '<img src="/' . drupal_get_path('module', 'sticky_notes') . '/images/pin-' . $vars['node']->priority . '.gif" />';
   }
 }
 

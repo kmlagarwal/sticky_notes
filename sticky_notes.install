@@ -15,6 +15,7 @@
 
 function sticky_notes_install() {
   drupal_install_schema('sticky_notes');
+  drupal_set_message('Sticky Notes module has been installed. Set the preferences for your site on !settings', array('!settings' => l(t('Sticky Notes settings', 'admin/settings/sticky_notes'))));
 }
 
 /**
@@ -25,7 +26,12 @@ function sticky_notes_install() {
  */
 
 function sticky_notes_uninstall() {
+  
+  // remove the sticky notes tables
   drupal_uninstall_schema('sticky_notes');
+  
+  // remove all nodes of type sticky notes
+  drupal_query('DELETE * FROM {node} WHERE type = "sticky_notes"');
 }
 
 /**

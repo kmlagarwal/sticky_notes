@@ -53,6 +53,7 @@ function sticky_notes_admin_form($form_state) {
   $form['info_box'] = array(
     '#type' => 'fieldset',
     '#title' => t('Info box'),
+    '#description' => t('The info box provides a quick way to access sticky notes. It will be displayed in one of the four corners of your screen and contains links to add and hide the sticky notes or to show an exposé of all notes on the current page.')
   );
   
   $form['info_box']['info_box_corner'] = array(
@@ -70,7 +71,7 @@ function sticky_notes_admin_form($form_state) {
   
   $form['info_box']['info_box_hide'] = array(
     '#type' => 'checkbox',
-    '#title' => t('Hide info box'),
+    '#title' => t('Automatically hide the info box'),
     '#description' => t('Check this, if you want that the info box will be hidden until you move your mouse in the selected corner.'),
     '#default_value' => variable_get('sticky_notes_info_box_hide', STICKY_NOTES_DEFAULT_INFO_BOX_HIDE),
   );

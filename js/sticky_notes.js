@@ -26,7 +26,7 @@ StickyNotes.startup = function() {
   
   StickyNotes.container_selector = Drupal.settings.sticky_notes.container_selector;
   StickyNotes.path = Drupal.settings.sticky_notes.current_path;
-  StickyNotes.query = 'pattern=' + Drupal.settings.sticky_notes.current_pattern + '&path=' + StickyNotes.path;
+  StickyNotes.query = 'destination=node&pattern=' + Drupal.settings.sticky_notes.current_pattern + '&path=' + StickyNotes.path;
   
   $(document).bind('popups_form_success', function() {
     // sticky note has been added, now we can reload all available notes
@@ -56,26 +56,29 @@ StickyNotes.startup = function() {
   
   // show all sticky notes in a grid to give overview
   $('#sticky-notes-options-display-expose').click(function() {
-    $(StickyNotes.elements_selector).show();
-    StickyNotes.showGrid(StickyNotes.elements_selector);
+    if ($(StickyNotes.elements_selector).length > 0) {
+      $(StickyNotes.elements_selector).show();
+      StickyNotes.showGrid(StickyNotes.elements_selector);
+    }
     return false;
   });
   
   // hide all notes on the current page when the link is clicked
   $('#sticky-notes-options-display-hidden').click(function() {
-    $(StickyNotes.elements_selector).hide();
-    $(this).hide();
-    $('#sticky-notes-options-display-normal').show();
+    StickyNotes.hideAll();
     return false;
   });
   
   // show all notes on the current page when the link is clicked
   $('#sticky-notes-options-display-normal').click(function() {
-    $(StickyNotes.elements_selector).show();
-    $(this).hide();
-    $('#sticky-notes-options-display-hidden').show();
+    StickyNotes.showAll();
     return false;
   });
+  
+  // attach destination string to links to node/add/sticky-notes
+	$('a[href$=node/add/sticky-notes]').each(function() {
+	  $(this).attr('href', $(this).attr('href') + '?' + StickyNotes.query);
+	});
   
   // initial loading of all sticky notes for this page
   StickyNotes.loadPage();
@@ -101,6 +104,7 @@ StickyNotes.updatePage = function() {
   $.getJSON('/sticky-notes/load?' + StickyNotes.query, function(data) {
     $('#sticky-notes-wrapper').replaceWith(data);
     StickyNotes.init();
+    StickyNotes.showAll();
   });
 }
 
@@ -137,8 +141,9 @@ StickyNotes.init = function() {
   // make them draggable
 	StickyNotes.makeDraggable(StickyNotes.elements_selector);
 	
+	// attach destination string to all actions, so that popups will return immediately
 	$('.sticky-notes-note-item-actions a').each(function() {
-	  $(this).attr('href', $(this).attr('href') + '?' + StickyNotes.query + 'destination=node');
+	  $(this).attr('href', $(this).attr('href') + '?' + StickyNotes.query);
 	});
   
   // attach the popup behaviour to the actions buttons
@@ -146,7 +151,8 @@ StickyNotes.init = function() {
     updateMethod: 'none',
     doneTest: 'node',
     noUpdate: 'true',
-    noMessage: true
+    noMessage: true,
+    hijackDestination: false
   }));
   
   $('div.sticky-notes-note-item-actions a').bind('click', function() {
@@ -228,6 +234,18 @@ StickyNotes.showPositioned = function() {
   });
   Popups.removeOverlay();
   StickyNotes.makeDraggable(StickyNotes.elements_selector);
+}
+
+StickyNotes.showAll = function() {
+  $(StickyNotes.elements_selector).fadeIn();
+  $('#sticky-notes-options-display-normal').hide();
+  $('#sticky-notes-options-display-hidden').show();
+}
+
+StickyNotes.hideAll = function() {
+  $(StickyNotes.elements_selector).fadeOut();
+  $('#sticky-notes-options-display-normal').show();
+  $('#sticky-notes-options-display-hidden').hide();
 }
 
 /**
