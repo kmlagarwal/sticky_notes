@@ -17,6 +17,12 @@
         <a id="sticky-notes-options-display-normal" href="#"><?php print t('Show notes'); ?></a>
       </div>
       
+      <?php if ($overview_link): ?>
+        <div class="sticky-notes-options-overview-link">
+          <?php print $overview_link; ?>
+        </div>
+      <?php endif; ?>
+      
     </div>
   </div>
 </div>

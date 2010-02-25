@@ -16,6 +16,7 @@
 function sticky_notes_install() {
   drupal_install_schema('sticky_notes');
   drupal_set_message('Sticky Notes module has been installed. Set the preferences for your site on !settings', array('!settings' => l(t('Sticky Notes settings', 'admin/settings/sticky_notes'))));
+  
 }
 
 /**

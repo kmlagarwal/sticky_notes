@@ -163,6 +163,13 @@ StickyNotes.init = function() {
     return false;
   });
   
+  // show the additional options if there are any notes on the page
+  if ($(StickyNotes.elements_selector).length > 0) {
+    $('#sticky-notes-options').show();
+  } else {
+    $('#sticky-notes-options').hide();
+  }
+  
   // update the notes page count
   StickyNotes.updatePageCount();
   

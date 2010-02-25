@@ -193,12 +193,17 @@ function sticky_notes_theme() {
     ),
     'sticky_notes_info_box' => array(
       'template' => 'sticky-notes-info-box',
-      'arguments' => array('classes' => NULL, 'add_link' => NULL),
+      'arguments' => array('classes' => NULL, 'add_link' => NULL, 'overview_link' => NULL),
       'path' => drupal_get_path('module', 'sticky_notes') . '/templates',
     ),
     'sticky_notes_note' => array(
       'template' => 'sticky-notes-note',
       'arguments' => array('node' => NULL, 'priority_image' => NULL),
+      'path' => drupal_get_path('module', 'sticky_notes') . '/templates',
+    ),
+    'sticky_notes_priority_image' => array(
+      'template' => 'sticky-notes-priority-image',
+      'arguments' => array('priority_image_url' => NULL, 'priority_label' => NULL),
       'path' => drupal_get_path('module', 'sticky_notes') . '/templates',
     ),
   );
@@ -457,12 +462,13 @@ function sticky_notes_form_alter(&$form, &$form_state, $form_id) {
  * @author Ralf Baumbach
  */
 
-function sticky_notes_get_priority_array() {
-  return array(
+function sticky_notes_get_priority_array($priority = NULL) {
+  $priorities = array(
     STICKY_NOTES_PRIORITY_LOW => t('low'),
     STICKY_NOTES_PRIORITY_NORMAL => t('normal'),
     STICKY_NOTES_PRIORITY_HIGH => t('high'),
   );
+  return $priority !== NULL ? ($priorities[$priority] ? $priorities[$priority] : FALSE) : $priorities;
 }
 
 /**
@@ -564,7 +570,6 @@ function sticky_notes_preprocess_page(&$vars) {
       return;
     }
     
-    $menu_item = menu_get_item();
     $link = url('node/add/sticky-notes');
   }
   
@@ -575,7 +580,10 @@ function sticky_notes_preprocess_page(&$vars) {
       $classes .= ' hide-info-box';
     }
     
-    $vars['header'] .= theme('sticky_notes_info_box', $classes, $link);
+    $menu_item = menu_get_item();
+    $overview_link = module_exists('views') && $menu_item['href'] != 'sticky-notes/list' ? l(t('Sticky Notes overview'), 'sticky-notes/list') : NULL;
+    
+    $vars['header'] .= theme('sticky_notes_info_box', $classes, $link, $overview_link);
   }
   
 }
@@ -597,7 +605,7 @@ function sticky_notes_preprocess(&$vars, $hook) {
     $vars['author'] = check_plain($vars['node']->name);
     $vars['note_can_be_modified'] = sticky_notes_access('update', $vars['node'], $user);
     $vars['note_can_be_deleted'] = sticky_notes_access('delete', $vars['node'], $user);
-    $vars['priority_image'] = '<img src="/' . drupal_get_path('module', 'sticky_notes') . '/images/pin-' . $vars['node']->priority . '.gif" />';
+    $vars['priority_image'] = theme('sticky_notes_priority_image', '/' . drupal_get_path('module', 'sticky_notes') . '/images/pin-' . $vars['node']->priority . '.gif', sticky_notes_get_priority_array($vars['node']->priority));
   }
 }
 

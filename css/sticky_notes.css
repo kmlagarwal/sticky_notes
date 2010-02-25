@@ -150,6 +150,10 @@ div#sticky-notes-info-box div {
   display: block;
 }
 
+div#sticky-notes-info-box #sticky-notes-options {
+  display: none;
+}
+
 div#sticky-notes-info-box-wrapper .content {
   background-color: lightgray;
   margin: 0px;
