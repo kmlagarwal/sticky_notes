@@ -15,25 +15,41 @@
 function sticky_notes_requirements($phase) {
   $requirements = array();
   
-  if ($phase == 'install') {
+  // Ensure translations don't break at install time
+  $t = get_t();
   
-    // Ensure translations don't break at install time
-    $t = get_t();
+  // call the modalframe implementation of hook_requirements manually to
+  // check fo correct installation
+  module_load_include('install', 'modalframe');
+  $modalframe_requirements = modalframe_requirements('install');
   
-    if (module_exists('jquery_ui')) {
-      $requirements['sticky_notes'] = array(
-        'title' => $t('Sticky Notes'),
-        'severity' => REQUIREMENT_OK,
-        'value' => $t('Correctly installed.'),
-      );
-    } else {
-      $requirements['sticky_notes'] = array(
-        'title' => $t('Sticky Notes'),
-        'severity' => REQUIREMENT_ERROR,
-        'value' => $t('without jQuery UI support, not functional'),
-        'description' => $t('The <a href="@url">jQuery UI</a> module is missing or not correctly installed.', array('@url' => 'http://drupal.org/project/jquery_ui')),
-      );
+  if (module_exists('jquery_ui') && module_exists('modalframe') && !count($modalframe_requirements)) {
+    $requirements['sticky_notes'] = array(
+      'title' => $t('Sticky Notes'),
+      'severity' => REQUIREMENT_OK,
+      'value' => $t('Correctly installed.'),
+    );
+  } else {
+    
+    $missing = array();
+    $description = array();
+    
+    if (!module_exists('jquery_ui')) {
+      $missing[] = 'jQuery UI';
+      $description[] = $t('The <a href="@url">jQuery UI</a> module is missing or not correctly installed.', array('@url' => 'http://drupal.org/project/jquery_ui'));
     }
+    
+    if (!module_exists('modalframe')) {
+      $missing[] = 'Modal Frame API';
+      $description[] = $t('The <a href="@url">Modalframe API</a> module is missing or not correctly installed.', array('@url' => 'http://drupal.org/project/modalframe'));
+    }
+    
+    $requirements['sticky_notes'] = array(
+      'title' => $t('Sticky Notes'),
+      'severity' => REQUIREMENT_ERROR,
+      'value' => '1.x dev',
+      'description' => implode('<br />', $description),
+    );
   }
   
   return $requirements;
