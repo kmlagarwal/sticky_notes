@@ -1,1 +1,0 @@
-<img src="<?php print $priority_image_url; ?>" alt="<?php print $priority_label; ?>"  title="<?php print $priority_label; ?>" />
