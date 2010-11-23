@@ -104,7 +104,7 @@ Drupal.behaviors.sticky_notes = function(context) {
       });
   };
  
-  //Each time the notes are loaded, we re-display them and update the infobox
+  // Each time the notes are loaded, we re-display them and update the infobox
   Main.stickyNotesLoaded = function() {
     StickyNotes.init();
     Infobox.updateOptionsVisibility();  
@@ -168,7 +168,6 @@ Drupal.behaviors.sticky_notes = function(context) {
         self.enableOptions();
         
         self.updateOptionsVisibility();
-        StickyNotes.setVisibility(!((Main.readCookie('sticky_notes_visibility') == 'hidden') || settings.hideOnPageLoad));
       }
     });
   };
@@ -262,21 +261,18 @@ Drupal.behaviors.sticky_notes = function(context) {
    $('#sticky-notes-page-count').html(Drupal.formatPlural(StickyNotes.count(), '1 note', '@count notes'));
   };
   
-    
-  
   
   var StickyNotes = {
-    wrapper: '', /*The notes wrapper element, initialized on bootstrap*/
+    wrapper: '', /* The notes wrapper element, initialized on bootstrap */
     items:     [],
-    zIndex: 0,   /*The highest Z index at a given moment.*/
-    hidden: settings.hideOnPageLoad && settings.toggleVisibilityState,
-    expose: false, /*Current display mode*/
-    resize_timeout: null /*Implements a delay between window resize events and the display 
+    zIndex: 0,   /* The highest Z index at a given moment. */
+    hidden: true, /* Initially the notes are hidden */
+    expose: false, /* Current display mode */
+    resize_timeout: null /* Implements a delay between window resize events and the display 
                             movements. */
     
   };
 
-  
   StickyNotes.count = function() {
     return $(settings.elementsSelector).length;
   };
@@ -341,15 +337,16 @@ Drupal.behaviors.sticky_notes = function(context) {
    
     $.ajaxSetup ({ cache: false});
     $.getJSON(settings.callbacks.load + settings.query, function(data) {
-       self.wrapper.hide();
-       self.items = $(data).html(); //->why do we need the items variable ??
-       self.wrapper.html(self.items);
-       
-       // check if the notes should be hidden on initial page load
-       self.setVisibility(settings.toggleVisibilityState ? 
-           Main.readCookie('sticky_notes_visibility') == 'visible' && !settings.hide_on_page_load : false);
-       Main.stickyNotesLoaded();
-     });    
+      
+      // update the notes wrapper with the returned data
+      self.wrapper.html($(data).html());
+      
+      // check if the notes should be hidden on initial page load
+      self.setVisibility(settings.toggleVisibilityState ? 
+        Main.readCookie('sticky_notes_visibility') == 'visible' && !settings.hideOnPageLoad : false, false);
+      
+      Main.stickyNotesLoaded();
+    });    
   };
   
     
@@ -428,12 +425,12 @@ Drupal.behaviors.sticky_notes = function(context) {
     var self = this;
     $(element).draggable({
       containment:'document',
-      start:function(e,ui){ 
+      start: function(e,ui){ 
         if (self.zIndex > ui.helper.css('z-index')) {
           ui.helper.css('z-index', ++self.zIndex); 
         }
       },
-      stop:function(e,ui){
+      stop: function(e,ui){
         var nid = parseInt(ui.helper.find('span.sticky-note-nid').html(), 10);
         self.saveNote(nid);
       }
@@ -444,12 +441,21 @@ Drupal.behaviors.sticky_notes = function(context) {
   /**
    * Small wrapper function to set the visibility of the notes
    */
-  StickyNotes.setVisibility = function(visible) {
+  StickyNotes.setVisibility = function(visible, update_cookie) {
     visible = settings.toggleVisibilityState ? visible : true;
-    if (visible) {
+    
+    // only show the nodes when they are hidden
+    if (visible && this.hidden) {
       this.showAll();
-    } else {
+    } else if (!visible) {
       this.hideAll();
+    }
+    this.hidden = visible ? false : true;
+    
+    // check if the cookie should be updated, the first initial call in
+    // StickyNotes.load doesn't need the cookie to be updated
+    if (typeof update_cookie == 'undefined' || update_cookie == true) {
+      Main.createCookie('sticky_notes_visibility', visible ? 'visible' : 'hidden', settings.visibility_state_memory);
     }
   };  
   
@@ -574,11 +580,9 @@ Drupal.behaviors.sticky_notes = function(context) {
    * Show all sticky notes
    */
   StickyNotes.showAll = function() {
-    $(this.wrapper).fadeIn();
     $('#sticky-notes-options-display-normal').hide();
     $('#sticky-notes-options-display-hidden').show();
-    this.hidden = false;
-    Main.createCookie('sticky_notes_visibility', 'visible', settings.visibility_state_memory);
+    $(this.wrapper).fadeIn();
   };
   
   
@@ -586,11 +590,9 @@ Drupal.behaviors.sticky_notes = function(context) {
   * Hide all sticky notes
   */
   StickyNotes.hideAll = function() {
-    $(StickyNotes.wrapper).hide();
+    $(this.wrapper).hide();
     $('#sticky-notes-options-display-normal').show();
     $('#sticky-notes-options-display-hidden').hide();
-    this.hidden = true;
-    Main.createCookie('sticky_notes_visibility', 'hidden', settings.visibility_state_memory);
   };
   
   
@@ -719,6 +721,7 @@ Drupal.behaviors.sticky_notes = function(context) {
     // they will disappear once expose view is left
     if (this.hidden) {
       this.setVisibility(true);
+      self.hidden = true;
     }  
 
     Infobox.disableOptions();
