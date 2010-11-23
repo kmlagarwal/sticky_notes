@@ -1,0 +1,5 @@
+/* $Id: image_source.txt,v 1.1 2010/03/09 16:45:34 berliner Exp $ */
+
+The pin images come from: http://www.hscripts.com/freeimages/icons/stationary/push-pin-clipart.php
+I'm not sure about the license model they use for cliparts. In their license information they only state GPL for scripts available on their site: http://www.hscripts.com/license/hioxlicense.html
+

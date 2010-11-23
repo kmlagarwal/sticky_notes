@@ -1,0 +1,27 @@
+// $Id: CHANGELOG.txt,v 1.2.2.4 2010/08/07 19:48:08 berliner Exp $
+
+Sticky Notes 6.x-1.x
+------------------------------
+
+#403654 added translation file sticky_notes.pot and a first german translation version, still pretty rough
+#403648 bugfix: made priorities really optional
+#818624: Prevent missing save button when node preview is required.
+#801204 feature: Allow role specific control of access to private / public
+   setting for notes
+#794866 bugfix: implemented hook_requirements to check correct jquery_ui
+   installation
+feature extensions: role based visibility, remember visibility state in
+   session, restructured settings pages
+#778620: fixed, added a bunch of new settings and features, notes are now
+   resizable
+#748916 by berliner, MGN: Changed access verification for integration with
+   node access modules, implemented hook_search, added additional permissions
+   for note creation and access to search, the last commit didn't cover all
+   files
+#748916 by berliner, MGN: Changed access verification for integration with node
+   access modules, implemented hook_search, added additional permissions for
+   note creation and access to search
+#740554: Fixed, urls build using url() and given as settings vars to javascript
+#740572 by a_c_m: Fixed and uses l() instead of custom building the links in
+   the TPL, as well as moving that logic to the pre-process function.
+Initial dev release of sticky_notes module.
