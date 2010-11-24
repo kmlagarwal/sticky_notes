@@ -118,7 +118,7 @@ function sticky_notes_delete_js($node) {
  * @author berliner
  */
 
-function sticky_notes_save_js($node, $x, $y, $w, $h) { //$w, $h, $z) {
+function sticky_notes_save_js($node, $x, $y, $width, $height) {
 
   // check if the user has permission to modify the node
   global $user;
@@ -127,22 +127,33 @@ function sticky_notes_save_js($node, $x, $y, $w, $h) { //$w, $h, $z) {
     return;
   }
 
-  $computeZ = isset($_REQUEST['z']) ? $_REQUEST['z'] : 0;
+  $computeZ = (boolean) isset($_REQUEST['z']) ? $_REQUEST['z'] : 0;
+
+  // if this note has been attached to a dom element, that we need to get this
+  // information here to save it as a serialized array
+  $attached_to = serialize(array(
+    'path' => isset($_GET['parent']) ? (string) urldecode($_GET['parent']) : NULL,
+    'left' => isset($_GET['left']) ? (int) urldecode($_GET['left']) : NULL,
+    'top' => isset($_GET['top']) ? (int) urldecode($_GET['top']) : NULL,
+  ));
+
+  // assemble the query arguments
+  $args = array((int) $x, (int) $y, (int) $width, (int) $height, $attached_to);
 
   if ($computeZ) { //check if we need to re-order z-indexes
     // reestablish order of the notes on the page and retrieve the highest z_index    
-    $z_index = sticky_notes_reorder_page_notes($node->link_path, $node->link_pattern);
+    $args[] = sticky_notes_reorder_page_notes($node->link_path, $node->link_pattern) + 1;
     
     // update the notes position in the database and increase the z-index so
     // that this note will be on top of all the others
-    db_query('UPDATE {node_sticky_note}
-              SET position_x = %d, position_y = %d, width = %d, height = %d, position_z = %d
-              WHERE nid = %d', $x, $y, $w, $h, $z_index++, $node->nid);
+    db_query("UPDATE {node_sticky_note}
+              SET position_x = %d, position_y = %d, width = %d, height = %d, attached_to = '%s', position_z = %d
+              WHERE nid = %d", array_merge($args, array($node->nid)));
   } 
   else { //if not, just save the note position and size
-    db_query('UPDATE {node_sticky_note}
-              SET position_x = %d, position_y = %d, width = %d, height = %d
-              WHERE nid = %d', $x, $y, $w, $h, $node->nid);    
+    db_query("UPDATE {node_sticky_note}
+              SET position_x = %d, position_y = %d, width = %d, height = %d, attached_to = '%s'
+              WHERE nid = %d", array_merge($args, array($node->nid)));    
   }
 }
 

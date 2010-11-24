@@ -509,6 +509,7 @@ function sticky_notes_theme() {
 
 function sticky_notes_load($node) {
   $additions = db_fetch_object(db_query('SELECT * FROM {node_sticky_note} WHERE vid = %d', $node->vid));
+  $additions->attached_to = unserialize($additions->attached_to);
   return $additions;
 }
 
@@ -1340,7 +1341,7 @@ function sticky_notes_init() {
 
   if (sticky_notes_check_interface_access()) {
     
-    jquery_ui_add(array('ui.resizable', 'ui.draggable'));
+    jquery_ui_add(array('ui.resizable', 'ui.draggable', 'ui.droppable'));
     
     // make sure that the notes and the info box are not visible on our
     // javascript callback pages
@@ -1414,10 +1415,19 @@ function sticky_notes_init() {
  */
 
 function sticky_notes_preprocess(&$vars, $hook) {
+  d($hook);
   if ($hook == 'sticky_notes_note') {
+    
     global $user;
     global $base_url;
+    
+    // some defaults that might get overridden later
+    $vars['edit_link'] = FALSE;
+    $vars['delete_link'] = FALSE;
+    $vars['priority_image'] = FALSE;
+    
     $node = $vars['node'];
+    
     $vars['content'] = check_markup($node->body);
     $vars['author'] = theme('username', $node);
     if (node_access('update', $node, $user)) {

@@ -157,6 +157,10 @@ function sticky_notes_schema() {
         'not null'  => TRUE,
         'default'   => 0
       ),
+      'attached_to' => array(
+        'type'      => 'text',
+        'default'   => NULL
+      ),
       'width' => array(
         'type'      => 'int',
         'unsigned'  => TRUE,
@@ -216,6 +220,7 @@ function sticky_notes_schema() {
 
 
 /**
+ * Implementation of hook_update_n().
  * Add public field for improved sticky note access.
  */
 
@@ -231,6 +236,11 @@ function sticky_notes_update_6100() {
   return $ret;
 }
 
+/**
+ * Implementation of hook_update_n().
+ * Add width and height fields to make notes resizable.
+ */
+ 
 function sticky_notes_update_6101() {
   $ret = array();
   db_add_field($ret, 'node_sticky_note', 'width', array(
@@ -248,6 +258,11 @@ function sticky_notes_update_6101() {
   return $ret;
 }
 
+/**
+ * Implementation of hook_update_n().
+ * Add the title of the page where a note has been created.
+ */
+ 
 function sticky_notes_update_6102() {
   $ret = array();
   db_add_field($ret, 'node_sticky_note', 'origin_title', array(
@@ -259,3 +274,30 @@ function sticky_notes_update_6102() {
   return $ret;
 }
 
+/**
+ * Implementation of hook_update_n().
+ * Add a field to store attachement information, so that notes "know" where they belong.
+ */
+ 
+function sticky_notes_update_6104() {
+  $ret = array();
+  db_add_field($ret, 'node_sticky_note', 'attached_to', array(
+    'type'      => 'text',
+    'default'   => NULL
+  ));
+  return $ret;
+}
+
+/**
+ * Implementation of hook_update_n().
+ */
+ 
+function sticky_notes_update_6105() {
+  $ret = array();
+  $result = db_query('SELECT nid FROM {node} n WHERE n.type = "sticky_notes"');
+  while ($row = db_fetch_object($result)) {
+    $node = node_load($row->nid);
+    node_save($node);
+  }
+  return $ret;
+}

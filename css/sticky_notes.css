@@ -32,6 +32,12 @@ div.sticky-notes-note-item-wrapper {
   overflow: hidden;
 }
 
+.sticky-notes-note-draggable-area {
+  width: 100%;
+  height: 15px;
+  background-color: #DEDC65;
+}
+
 .sticky-notes-note-item-priority img {
   width: 20px;
 }
@@ -41,6 +47,7 @@ div#sticky-notes-info-box-wrapper .hide-info-box .content,
 div#sticky-notes-info-box #sticky-notes-options,
 #sticky-notes-wrapper #sticky-notes-options-display-normal,
 #sticky-notes-wrapper span.sticky-note-nid,
+#sticky-notes-wrapper span.sticky-note-parent,
 #sticky-notes-wrapper.hidden {
   display: none;
 }
@@ -65,7 +72,7 @@ div.sticky-notes-note-item {
 }
 
 /* draggable objects */
-.sticky-notes-enabled .ui-draggable {
+.sticky-notes-enabled .ui-draggable .sticky-notes-note-draggable-area  {
   cursor: move;
 }
 
@@ -92,16 +99,28 @@ div.sticky-notes-note-item-wrapper .ui-resizable-handle {
 }
 
 /* The notes body text */
-div.sticky-notes-note-item-body {
+div.sticky-notes-note-item-body-wrapper {
+  position: relative;
   font-size: 12px;
   line-height: 16px;
-  padding: 5px;
+  display: block;
+  position: absolute;
+  height: auto;
+  bottom: 0px;
+  top: 15px;
+  left: 0px;
+  right: 0px;
+  margin: 5px 5px 25px 5px;
+}
+
+div.sticky-notes-note-item-body {
+  height: 100%;
 }
 
 /* Paragraphs in the notes body*/
 div.sticky-notes-note-item-body p {
-  margin-top: 0px;
-  padding-top: 0px;
+  margin: 0px;
+  padding: 0px;
 }
 
 /* Wrapper for the notes action links */
@@ -139,15 +158,18 @@ div.sticky-notes-note-item-actions a {
 }
 
 /* The author and date information */
-div.sticky-notes-note-item-author {
+div.sticky-notes-note-item-author-wrapper {
+  width: 100%;
   position: absolute;
   right: 0px;
   bottom: 0px;
   font-size: 10px;
   text-align: right;
-  width: 100%;
-  margin-right: 5px;
   background-color: #FDFB8C;
+}
+
+div.sticky-notes-note-item-author {
+  padding-right: 5px;
 }
 
 /* The info box */
