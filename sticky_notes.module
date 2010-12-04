@@ -29,8 +29,11 @@ define('STICKY_NOTES_DEFAULT_SCOPE', STICKY_NOTES_SCOPE_LINK_PATH);
 define('STICKY_NOTES_DEFAULT_PUBLIC', 1);
 define('STICKY_NOTES_DEFAULT_WIDTH', 154);
 define('STICKY_NOTES_DEFAULT_HEIGHT', 154);
-define('STICKY_NOTES_DEFAULT_NOTE_COLOR', 'FDFB8C');
+define('STICKY_NOTES_DEFAULT_NOTE_COLOR', '#FDFB8C');
 define('STICKY_NOTES_DEFAULT_TEXT_COLOR', 'black');
+define('STICKY_NOTES_DEFAULT_HEADER_COLOR', '#DEDC65');
+define('STICKY_NOTES_DEFAULT_BODY_COLOR', '#FDFB8C');
+define('STICKY_NOTES_DEFAULT_BORDER_COLOR', '#FDFB8C');
 define('STICKY_NOTES_DEFAULT_CHARACTER_LIMIT', 0);
 define('STICKY_NOTES_DEFAULT_RESIZABLE', TRUE);
 define('STICKY_NOTES_DEFAULT_TOGGLE_VISIBILITY_STATE', TRUE);
@@ -453,7 +456,9 @@ function sticky_notes_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
       // if title is not set node_form_submit will create a notice abaout
       // access to a property that is not set. This seems to be a bug in
       // node.module
-      $node->title = '';
+      // to make notes distinguishable on admin pages we set a truncated
+      // version of the nodes body as the title
+      $node->title = truncate_utf8($node->body, 80);
       break;
     
   }
@@ -494,6 +499,10 @@ function sticky_notes_theme() {
     'sticky_notes_admin_priorities_form' => array(
       'file' => 'sticky_notes.admin.inc',
       'arguments' => array('form' => NULL),
+    ),
+    'sticky_notes_admin_priorities_color_options_form' => array(
+      'file' => 'sticky_notes.admin.inc',
+      'arguments' => array('form' => NULL, 'priority' => NULL),
     ),
   );
 }
@@ -958,7 +967,7 @@ function sticky_notes_get_priority_array($priority = NULL) {
   $priorities = array();
   for ($i = 0; $i < STICKY_NOTES_PRIORITY_LEVEL_MAX_COUNT; $i++) {
     $name = variable_get('sticky_notes_priority_name_' . $i, sticky_notes_get_default_priority_name($i));
-    if (!empty($name)) {
+    if (!empty($name) && variable_get('sticky_notes_priority_active_' . $i, FALSE)) {
       $priorities[$i] = check_plain($name);
     }
   }
@@ -1436,8 +1445,42 @@ function sticky_notes_preprocess(&$vars, $hook) {
     if (node_access('delete', $node, $user)) {
       $vars['delete_link'] = l(t('Delete'), 'sticky-notes/delete/' . $node->nid . '/edit', array('attributes' => array('class' => 'sticky-notes-delete-button', 'title' => t('Delete Sticky Note'))));
     }
-    // find the right priority image if any
+    
+    // global color options
+    $vars['sticky_note_note_color']  = variable_get('sticky_notes_note_color', STICKY_NOTES_DEFAULT_NOTE_COLOR);
+    $vars['sticky_note_text_color']  = variable_get('sticky_notes_text_color', STICKY_NOTES_DEFAULT_TEXT_COLOR);
+    $vars['sticky_note_border_color'] = variable_get('sticky_notes_border_color', STICKY_NOTES_DEFAULT_BORDER_COLOR);
+    $vars['sticky_note_header_color']  = variable_get('sticky_notes_header_color', STICKY_NOTES_DEFAULT_HEADER_COLOR);
+    
+    // get the priority name for this note if any
     $priority_name = variable_get('sticky_notes_priority_name_' . $node->priority, sticky_notes_get_default_priority_color($node->priority));
+    
+    if (!empty($priority_name)) {
+      
+      // override global color settings
+      $color_body = variable_get('sticky_notes_priority_color_body_' . $node->priority, STICKY_NOTES_DEFAULT_BODY_COLOR);
+      if (!empty($color_body)) {
+        $vars['sticky_note_note_color']  = $color_body;
+      }
+      
+      $color_text = variable_get('sticky_notes_priority_color_text_' . $node->priority, STICKY_NOTES_DEFAULT_TEXT_COLOR);
+      if (!empty($color_text)) {
+        $vars['sticky_note_text_color']  = $color_text;
+      }
+      
+      $color_border = variable_get('sticky_notes_priority_color_border_' . $node->priority, STICKY_NOTES_DEFAULT_BORDER_COLOR);
+      if (!empty($color_border)) {
+        $vars['sticky_note_border_color']  = $color_border;
+      }
+      
+      $color_header = variable_get('sticky_notes_priority_color_header_' . $node->priority, STICKY_NOTES_DEFAULT_HEADER_COLOR);
+      if (!empty($color_header)) {
+        $vars['sticky_note_header_color']  = $color_header;
+      }
+      
+    }
+    
+    // set priority display settings if any
     if (!empty($priority_name)) {
       $pin_color = variable_get('sticky_notes_priority_color_' . $node->priority, sticky_notes_get_default_priority_color($node->priority));
     
@@ -1445,11 +1488,12 @@ function sticky_notes_preprocess(&$vars, $hook) {
       if (file_exists($pin_file)) {
         $vars['priority_image'] = theme('sticky_notes_priority_image', $base_url . '/' . $pin_file, sticky_notes_get_priority_array($node->priority));
       }
+      
     }
+    
     $vars['sticky_note_width']  = $node->width > 0 ? $node->width : variable_get('sticky_notes_width', STICKY_NOTES_DEFAULT_WIDTH);
     $vars['sticky_note_height'] = $node->height > 0 ? $node->height : variable_get('sticky_notes_height', STICKY_NOTES_DEFAULT_HEIGHT);
-    $vars['sticky_note_note_color']  = variable_get('sticky_notes_note_color', STICKY_NOTES_DEFAULT_NOTE_COLOR);
-    $vars['sticky_note_text_color']  = variable_get('sticky_notes_text_color', STICKY_NOTES_DEFAULT_TEXT_COLOR);
+    
   }
 }
 

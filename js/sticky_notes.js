@@ -376,39 +376,6 @@ Drupal.behaviors.sticky_notes = function(context) {
     });    
   };  
   
-  
-//  StickyNotes.windowResizeHandler = function() {
-//    var self = this;
-//    
-//    function resizeOverlay() {
-//      if ((typeof this.windowDimensions != 'undefined') &&
-//          (this.windowDimensions.width == $(window).width()) &&
-//          (this.windowDimensions.heigth == $(window).height())) {
-//        return false;
-//      };
-//      
-//      self.setOverlay();
-//      
-//      this.windowDimensions = {
-//          width: $(window).width(),
-//          heigth: $(window).height()
-//      };      
-//      
-//      return true;
-//    } 
-//    
-//    /*if not in expose mode, don't do anything*/
-//    if (!this.expose) return;
-//    
-//    if (!resizeOverlay()) return;
-//    
-//    //reposition notes
-//    
-//    return;
-//    
-//  };
-  
-  
   /**
    * Load the notes for this page
    */  

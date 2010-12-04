@@ -27,7 +27,7 @@
 
 ?>
 
-<div id="sticky-note-<?php print $node->nid; ?>" class="sticky-notes-note-item-wrapper <?php print $edit_link ? 'editable' : ''; ?>" style="width: <?php print $sticky_note_width; ?>px; height: <?php print $sticky_note_height; ?>px; position: absolute; top: <?php print $node->position_y; ?>px; left: <?php print $node->position_x; ?>px; z-index: <?php print $node->position_z; ?>;">
+<div id="sticky-note-<?php print $node->nid; ?>" class="sticky-notes-note-item-wrapper <?php print $edit_link ? 'editable' : ''; ?> sticky-note-priority-<?php print $node->priority; ?>" style="width: <?php print $sticky_note_width; ?>px; height: <?php print $sticky_note_height; ?>px; position: absolute; top: <?php print $node->position_y; ?>px; left: <?php print $node->position_x; ?>px; z-index: <?php print $node->position_z; ?>;">
   
   <?php if ($priority_image): ?>
     <div class="sticky-notes-note-item-priority"><?php print $priority_image; ?></div>
@@ -46,8 +46,8 @@
     </div>
   <?php endif; ?>
   
-  <div class="sticky-notes-note-item" style="width: <?php print $sticky_note_width - 4; ?>px; height: <?php print $sticky_note_height - 4; ?>px; background-color: <?php print $sticky_note_note_color; ?>">
-    <div class="sticky-notes-note-draggable-area"></div>
+  <div class="sticky-notes-note-item" style="width: <?php print $sticky_note_width - 4; ?>px; height: <?php print $sticky_note_height - 4; ?>px; background-color: <?php print $sticky_note_note_color; ?>; border: 1px solid <?php print $sticky_note_border_color; ?>">
+    <div class="sticky-notes-note-draggable-area" style="background-color: <?php print $sticky_note_header_color; ?>"></div>
     <span class="sticky-note-nid"><?php print $node->nid; ?></span>
     <?php if ($node->attached_to): ?>
       <span class="sticky-note-parent">

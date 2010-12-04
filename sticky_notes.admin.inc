@@ -90,10 +90,26 @@ function sticky_notes_admin_global_form($form_state) {
     '#description' => t('The height in pixels. Leave empty to use default value (154px).'),
   );
   
+  $form['appearance']['header_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Header color'),
+    '#default_value' => variable_get('sticky_notes_header_color', STICKY_NOTES_DEFAULT_HEADER_COLOR),
+    '#size' => 8,
+    '#description' => t('A color code as you would set it in a stylesheet (e.g. #FDFB8C, red, ...). Leave empty to use system default.'),
+  );
+  
   $form['appearance']['note_color'] = array(
     '#type' => 'textfield',
     '#title' => t('Note color'),
     '#default_value' => variable_get('sticky_notes_note_color', STICKY_NOTES_DEFAULT_NOTE_COLOR),
+    '#size' => 8,
+    '#description' => t('A color code as you would set it in a stylesheet (e.g. #FDFB8C, red, ...). Leave empty to use system default.'),
+  );
+  
+  $form['appearance']['border_color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Border color'),
+    '#default_value' => variable_get('sticky_notes_border_color', STICKY_NOTES_DEFAULT_BORDER_COLOR),
     '#size' => 8,
     '#description' => t('A color code as you would set it in a stylesheet (e.g. #FDFB8C, red, ...). Leave empty to use system default.'),
   );
@@ -229,7 +245,9 @@ function sticky_notes_admin_global_form_submit($form, &$form_state) {
   variable_set('sticky_notes_page_visibility_hide_on_load', $values['hide_on_page_load']);
   variable_set('sticky_notes_width', $values['width']);
   variable_set('sticky_notes_height', $values['height']);
+  variable_set('sticky_notes_header_color', $values['header_color']);
   variable_set('sticky_notes_note_color', $values['note_color']);
+  variable_set('sticky_notes_border_color', $values['border_color']);
   variable_set('sticky_notes_text_color', $values['text_color']);
   variable_set('sticky_notes_character_limit', $values['character_limit']);
   variable_set('sticky_notes_resizable', $values['resizable']);
@@ -272,7 +290,7 @@ function sticky_notes_admin_priorities_form($form_state) {
   $form['priority'] = array(
     '#type' => 'fieldset',
     '#title' => t('Priority level'),
-    '#description' => t('You can define up to !max different priority levels for sticky notes. For each level you can chose a distinct colored pin. Note that only priority levels with a name will be accessible for notes. Levels with an empty name won\'t show up in the priority select boxes on the sticky note forms.', array('!max' => STICKY_NOTES_PRIORITY_LEVEL_MAX_COUNT)),
+    '#description' => t("You can define up to !max different priority levels for sticky notes. For each level you can chose a distinct colored pin. Note that only active priority levels with a name will be accessible for notes.", array('!max' => STICKY_NOTES_PRIORITY_LEVEL_MAX_COUNT)),
   );
   
   $colors = array(0 => t('None')) + sticky_notes_get_priority_colors();
@@ -280,7 +298,9 @@ function sticky_notes_admin_priorities_form($form_state) {
   
   for ((int) $i = 0; $i < STICKY_NOTES_PRIORITY_LEVEL_MAX_COUNT; $i++) {
     
-    $form['priority']['default'][$i] = array(
+    $priority = array();
+    
+    $priority['default'] = array(
       '#type' => 'radio',
       '#return_value' => $i,
       '#name' => 'priority[default]',
@@ -288,21 +308,64 @@ function sticky_notes_admin_priorities_form($form_state) {
       '#default_value' => isset($post['default']) ? $post['default'] : $current_priority,
     );
     
-    $form['priority']['name'][$i] = array(
+    $priority['active'] = array(
+      '#type' => 'checkbox',
+      '#default_value' => isset($post['active']) ? $post['active'] : variable_get('sticky_notes_priority_active_' . $i, FALSE),
+    );
+    
+    $priority['name'] = array(
       '#type' => 'textfield',
       '#title' => t('Name'),
       '#size' => 20,
       '#default_value' => isset($post['name'][$i]) ? $post['name'][$i] : variable_get('sticky_notes_priority_name_' . $i, sticky_notes_get_default_priority_name($i)),
-      '#description' => t('The name as it appears in the select box.')
+      '#description' => t('The name as it appears in the select box of the node edit form.'),
     );
     
-    $form['priority']['color'][$i] = array(
+    $priority['colors'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Color settings'),
+      '#description' => t('Override the global appearance settings for this priority level. Enter color codes as you would set them in a stylesheet (e.g. #FDFB8C, red, ...). Leave the fields empty to use the global values. '),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#theme' => 'sticky_notes_admin_priorities_color_options_form',
+    );
+    
+    $priority['colors']['pin'] = array(
       '#type' => 'select',
-      '#title' => t('Pin color'),
+      '#title' => t('Pin'),
       '#options' => $colors,
       '#default_value' => isset($post['color'][$i]) ? $post['color'][$i] : variable_get('sticky_notes_priority_color_' . $i, sticky_notes_get_default_priority_color($i)),
-      '#description' => t('The color of the pin. If you set this to none then no pin is displayed.')
     );
+    
+    $priority['colors']['header'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Header'),
+      '#default_value' => isset($post['color_header'][$i]) ? $post['color_header'][$i] : variable_get('sticky_notes_priority_color_header_' . $i, ''),
+      '#size' => 6,
+    );
+    
+    $priority['colors']['body'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Note'),
+      '#default_value' => isset($post['color_body'][$i]) ? $post['color_body'][$i] : variable_get('sticky_notes_priority_color_body_' . $i, ''),
+      '#size' => 6,
+    );
+    
+    $priority['colors']['border'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Border'),
+      '#default_value' => isset($post['color_border'][$i]) ? $post['color_border'][$i] : variable_get('sticky_notes_priority_color_border_' . $i, ''),
+      '#size' => 6,
+    );
+    
+    $priority['colors']['text'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Text'),
+      '#default_value' => isset($post['color_text'][$i]) ? $post['color_text'][$i] : variable_get('sticky_notes_priority_color_text_' . $i, ''),
+      '#size' => 6,
+    );
+    
+    $form['priority'][$i] = $priority;
     
   }
   
@@ -327,13 +390,18 @@ function sticky_notes_admin_priorities_form($form_state) {
 function sticky_notes_admin_priorities_form_validate($form, $form_state) {
   
   $values = $form_state['values'];
-  if (empty($values['priority']['name'][$values['priority']['default'][0]])) {
+  $default = $values['priority'][0]['default'];
+  if (empty($values['priority'][$default]['name'])) {
     // check if at least one priority has a name
-    for ((int) $i = 0; $i < STICKY_NOTES_PRIORITY_LEVEL_MAX_COUNT; $i++) {
-      if (strlen($values['priority']['name'][$i]) > 0) {
-        form_set_error('priority][name][' . $values['priority']['default'][0], t('The default priority must have a name.'));
+    foreach ($values['priority'] as $key => $priority) {
+      if (strlen($priority['name']) > 0) {
+        form_set_error('priority][' . $default . '][name', t('The default priority level must have a name.'));
       }
     }
+  }
+  
+  if (!$values['priority'][$default]['active']) {
+    form_set_error('priority][' . $default . '][active', t('The default priority level must be active.'));
   }
   
 }
@@ -351,11 +419,16 @@ function sticky_notes_admin_priorities_form_submit($form, $form_state) {
   
   $values = $form_state['values'];
   
-  for ($i = 0; $i < STICKY_NOTES_PRIORITY_LEVEL_MAX_COUNT; $i++) {
-    variable_set('sticky_notes_priority_name_' . $i, $values['priority']['name'][$i]);
-    variable_set('sticky_notes_priority_color_' . $i, $values['priority']['color'][$i]);
+  foreach ($values['priority'] as $key => $priority) {
+    variable_set('sticky_notes_priority_name_' . $key, $priority['name']);
+    variable_set('sticky_notes_priority_active_' . $key, $priority['active']);
+    variable_set('sticky_notes_priority_color_' . $key, $priority['colors']['pin']);
+    variable_set('sticky_notes_priority_color_header_' . $key, $priority['colors']['header']);
+    variable_set('sticky_notes_priority_color_body_' . $key, $priority['colors']['body']);
+    variable_set('sticky_notes_priority_color_text_' . $key, $priority['colors']['text']);
+    variable_set('sticky_notes_priority_color_border_' . $key, $priority['colors']['border']);
   }
-  variable_set('sticky_notes_default_priority_level', $values['priority']['default'][0]);
+  variable_set('sticky_notes_default_priority_level', $values['priority'][0]['default']);
   drupal_set_message(t('Your settings have been saved.'));
   
 }
@@ -549,28 +622,54 @@ function theme_sticky_notes_admin_priorities_form($form) {
   
   $header = array(
     array('data' => t('Default')),
-    array('data' => t('Name')),
-    array('data' => t('Pin color')),
+    array('data' => t('Active')),
+    array('data' => t('Settings')),
   );
   
   $rows = array();
-  $element = &$form['priority'];
-  for ($i = 0; $i < STICKY_NOTES_PRIORITY_LEVEL_MAX_COUNT; $i++) {
+  foreach ($form['priority'] as $i => &$element) {
+    if (!is_numeric($i)) {
+      continue;
+    }
     
     $row = array();
-    $row[] = array('data' => drupal_render($element['default'][$i]));
-    $row[] = array('data' => drupal_render($element['name'][$i]));
-    $row[] = array('data' => drupal_render($element['color'][$i]));
+    $row[] = array('data' => drupal_render($element['default']), 'style' => 'width: 10%;');
+    $row[] = array('data' => drupal_render($element['active']), 'style' => 'width: 10%;');
+    $row[] = array('data' => drupal_render($element['name']) . drupal_render($element['colors']), 'style' => 'width: *');
     $rows[] = $row;
+     
   }
   
   $output = '';
   
-  if ($rows)
+  if ($rows) {
     $table= theme('table', $header, $rows);
+  }
   
   $form['priority']['#value'] = $table;
   
   $output.= drupal_render($form);
   return $output;
+}
+
+/**
+ * Theme function for the priority color options
+ *
+ * @param string $element 
+ * @return void
+ * @author berliner
+ */
+ 
+function theme_sticky_notes_admin_priorities_color_options_form($element) {
+  
+  $rows = array();
+  $rows[] = array(
+    array('data' => drupal_render($element['pin'])),
+    array('data' => drupal_render($element['header'])),
+    array('data' => drupal_render($element['body'])),
+    array('data' => drupal_render($element['text'])),
+    array('data' => drupal_render($element['border'])),
+  );
+  
+  return theme('table', array(), $rows);;
 }

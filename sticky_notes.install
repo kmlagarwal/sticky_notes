@@ -275,6 +275,16 @@ function sticky_notes_update_6102() {
 }
 
 /**
+* Implementation of hook_update_n().
+*/
+ 
+function sticky_notes_update_6103() {
+  $ret = array();
+  db_query("UPDATE {node} n, {node_revisions} r SET n.title = LEFT(r.body, 80) WHERE n.vid = r.vid AND n.type = 'sticky_notes' AND n.title = ''");
+  return $ret;
+}
+
+/**
  * Implementation of hook_update_n().
  * Add a field to store attachement information, so that notes "know" where they belong.
  */
