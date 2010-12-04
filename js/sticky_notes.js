@@ -452,7 +452,8 @@ Drupal.behaviors.sticky_notes = function(context) {
       
       if (settings.resizable) { 
         self.makeResizable(this);
-      };      
+      };
+      
     });
       
     /*
@@ -469,6 +470,9 @@ Drupal.behaviors.sticky_notes = function(context) {
     Infobox.updateNotesCount();
   };
   
+  StickyNotes.getNote = function(nid) {
+    return $('#sticky-note-' + nid);
+  };
   
   StickyNotes.makeResizable = function(element) {
     var self = this;
@@ -760,7 +764,11 @@ Drupal.behaviors.sticky_notes = function(context) {
           fontSize: settings.noteDisplayDefaults.fontAuthor
         });
       
+      // make draggable and resizable
       self.makeDraggable(this);
+      if (settings.resizable) { 
+        self.makeResizable(this);
+      };
     });
 
     $('#sticky-notes-overlay').hide();
@@ -851,7 +859,11 @@ Drupal.behaviors.sticky_notes = function(context) {
     Infobox.disableOptions();
   
     // disable dragging
-    $(settings.elementsSelector).draggable('destroy');       
+    $(settings.elementsSelector).draggable('destroy');
+    // disable resizing
+    if (settings.resizable) { 
+      $(settings.elementsSelector).resizable('destroy');
+    };
   
     // handler for the window resizing
     var reposition = function() {
@@ -870,7 +882,7 @@ Drupal.behaviors.sticky_notes = function(context) {
     var overlay_hide = function() {
       self.expose = false;
       self.showPositioned();
-      if (self.hidden) { self.setVisibility(false); }      
+      if (self.hidden) { self.setVisibility(false); }
       Infobox.enableOptions();
       $(window).unbind('resize', reposition);
       $(this).unbind('click', overlay_hide);
