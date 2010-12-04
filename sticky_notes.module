@@ -508,7 +508,7 @@ function sticky_notes_theme() {
  */
 
 function sticky_notes_load($node) {
-  $additions = db_fetch_object(db_query('SELECT * FROM {node_sticky_note} WHERE vid = %d', $node->vid));
+  $additions = db_fetch_object(db_query("SELECT * FROM {node_sticky_note} WHERE vid = %d", $node->vid));
   $additions->attached_to = unserialize($additions->attached_to);
   return $additions;
 }
@@ -544,16 +544,16 @@ function sticky_notes_load_by_path($pattern = NULL, $path = NULL) {
   // we need special handling for anonymous users and authenticated users since
   // they are not in the users_roles table
   $nodes = array();
-  $result = db_query('SELECT    DISTINCT n.nid, n.uid, s.public
+  $result = db_query("SELECT    DISTINCT n.nid, n.uid, s.public
                       FROM      {node_sticky_note} s
                       LEFT JOIN {node} n USING(nid)
                       WHERE     (n.status = 1 OR (n.status = 0 AND n.uid = %d))
                       AND       (
-                                          s.link_path = "%s"
-                                OR        (s.link_scope = "pattern" AND s.link_pattern = "%s")
-                                OR        (s.link_scope = "all")
+                                          s.link_path = '%s'
+                                OR        (s.link_scope = 'pattern' AND s.link_pattern = '%s')
+                                OR        (s.link_scope = 'all')
                                 )
-                      ORDER BY  s.position_z', $user->uid, $path, $pattern);
+                      ORDER BY  s.position_z", $user->uid, $path, $pattern);
   
   $zIndex = variable_get('sticky_notes_minimal_zindex', STICKY_NOTES_DEFAULT_ZINDEX);
   while ($row = db_fetch_object($result)) {
@@ -840,7 +840,7 @@ function sticky_notes_update($node) {
  */
 
 function sticky_notes_delete($node) {
-  db_query('DELETE FROM {node_sticky_note} WHERE nid = %d', $node->nid);
+  db_query("DELETE FROM {node_sticky_note} WHERE nid = %d", $node->nid);
 
   // Tell the parent window to close the modal frame dialog.
   modalframe_close_dialog();
@@ -860,9 +860,9 @@ function sticky_notes_delete($node) {
 
 function sticky_notes_reorder_page_notes($path, $pattern) {
   $zIndex = variable_get('sticky_notes_minimal_zindex', STICKY_NOTES_DEFAULT_ZINDEX);
-  $result = db_query('SELECT nid FROM {node_sticky_note} WHERE link_path = "%s" OR (link_scope = "pattern" AND link_pattern = "%s") ORDER BY position_z', $path, $pattern);
+  $result = db_query("SELECT nid FROM {node_sticky_note} WHERE link_path = '%s' OR (link_scope = 'pattern' AND link_pattern = '%s') ORDER BY position_z", $path, $pattern);
   while ($row = db_fetch_object($result)) {
-    db_query('UPDATE {node_sticky_note} SET position_z = %d WHERE nid = %d', $zIndex++, $row->nid);
+    db_query("UPDATE {node_sticky_note} SET position_z = %d WHERE nid = %d", $zIndex++, $row->nid);
   }
   return $zIndex;
 }
@@ -1415,7 +1415,7 @@ function sticky_notes_init() {
  */
 
 function sticky_notes_preprocess(&$vars, $hook) {
-  d($hook);
+  
   if ($hook == 'sticky_notes_note') {
     
     global $user;

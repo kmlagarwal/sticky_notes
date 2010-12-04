@@ -111,6 +111,7 @@ Drupal.behaviors.sticky_notes = function(context) {
       accept: settings.elementsSelector,
       activeClass: "ui-state-hover",
       hoverClass: "ui-state-active",
+      addClasses: false,
       tolerance: 'pointer',
       greedy: true,
       over: function(event, ui) {
@@ -135,7 +136,7 @@ Drupal.behaviors.sticky_notes = function(context) {
         StickyNotes.saveNote(nid, true);
       }
     });
-  }
+  };
   
   // Each time the notes are loaded, we re-display them and update the infobox
   Main.stickyNotesLoaded = function() {

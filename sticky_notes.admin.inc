@@ -241,7 +241,7 @@ function sticky_notes_admin_global_form_submit($form, &$form_state) {
   drupal_set_message(t('Your settings have been saved.'));
   
   if ($values['reset_size']) {
-    $result = db_query('UPDATE {node_sticky_note} SET width = 0, height = 0 WHERE 1 = 1');
+    $result = db_query("UPDATE {node_sticky_note} SET width = 0, height = 0 WHERE 1 = 1");
     if ($result) {
       drupal_set_message(t('All notes have been resized to the default settings.'));
     }

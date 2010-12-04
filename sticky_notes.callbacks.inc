@@ -180,9 +180,9 @@ function sticky_notes_save_size_js($node, $width, $height) {
 
     // update the notes position in the database and increase the z-index so
     // that this note will be on top of all the others
-    db_query('UPDATE {node_sticky_note}
+    db_query("UPDATE {node_sticky_note}
               SET width = %d, height = %d
-              WHERE nid = %d', $width, $height, $node->nid);
+              WHERE nid = %d", $width, $height, $node->nid);
 
   }
 

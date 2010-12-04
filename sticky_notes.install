@@ -294,7 +294,7 @@ function sticky_notes_update_6104() {
  
 function sticky_notes_update_6105() {
   $ret = array();
-  $result = db_query('SELECT nid FROM {node} n WHERE n.type = "sticky_notes"');
+  $result = db_query("SELECT nid FROM {node} n WHERE n.type = 'sticky_notes'");
   while ($row = db_fetch_object($result)) {
     $node = node_load($row->nid);
     node_save($node);
