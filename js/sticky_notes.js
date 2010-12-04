@@ -363,11 +363,15 @@ Drupal.behaviors.sticky_notes = function(context) {
     this.wrapper.css('z-index', settings.minimal_z_index);
     
     $(window).resize(function() {
+      // only do this in normal view mode
+      if (StickyNotes.expose) {
+        return;
+      }
       $(settings.elementsSelector).each(function() {
         // get the note's NID
         var nid = parseInt($(this).find('span.sticky-note-nid').html(), 10);
         var note = $('#sticky-note-' + nid);
-        StickyNotes.updateRelativePosition(note);
+        StickyNotes.updateRelativePosition(note, true);
       });
     });    
   };  
@@ -455,7 +459,7 @@ Drupal.behaviors.sticky_notes = function(context) {
       /*
        * save the initial element positions
        */
-      self.initRelativePosition(nid);
+      self.initRelativePosition(nid, true);
        
       /*
        * find the one with the highest z-index and store the z-index
@@ -493,7 +497,7 @@ Drupal.behaviors.sticky_notes = function(context) {
     
     // attach the modalframe behavior to the actions buttons
     Main.attachModalFrameBehaviours('div.sticky-notes-note-item-actions a');
-     
+    
     // update the notes page count
     Infobox.updateNotesCount();
   };
@@ -677,7 +681,7 @@ Drupal.behaviors.sticky_notes = function(context) {
   /**
   * Initialize the relative position of the given note
   */
-  StickyNotes.initRelativePosition = function(nid) {
+  StickyNotes.initRelativePosition = function(nid, move) {
     
     var note = $('#sticky-note-' + nid);
     
@@ -696,14 +700,14 @@ Drupal.behaviors.sticky_notes = function(context) {
     note.data('top_rel', parseInt($(note).find('.sticky-note-parent-top').html(), 10));
     note.data('left_rel', parseInt($(note).find('.sticky-note-parent-left').html(), 10));
     
-    this.updateRelativePosition(note);
+    this.updateRelativePosition(note, move);
     
     // return the object that defines this relation
     this.storeData(note, parent_path);
     
   };
   
-  StickyNotes.updateRelativePosition = function(note) {
+  StickyNotes.updateRelativePosition = function(note, move) {
     
     // get the parents offset
     var parent_offset = $(note.data('path')).offset();
@@ -712,11 +716,16 @@ Drupal.behaviors.sticky_notes = function(context) {
     var top = parent_offset.top + note.data('top_rel');
     var left = parent_offset.left + note.data('left_rel');
     
-    // move the note to the according position so that it appears relative to
-    // it's semantical parent
-    $(note).css('top', top);
-    $(note).css('left', left);
-    
+    if (typeof move == 'undefined') {
+      note.data('top', top);
+      note.data('left', left);
+    }
+    else {
+      // move the note to the according position so that it appears relative to
+      // it's semantical parent
+      $(note).css('top', top);
+      $(note).css('left', left);
+    }
   }
   
   /**
@@ -751,6 +760,11 @@ Drupal.behaviors.sticky_notes = function(context) {
     if (typeof speed != 'string') { speed = 'slow'; }
     
     $(settings.elementsSelector).each(function() {
+      
+      var nid = parseInt($(this).find('span.sticky-note-nid').html(), 10);
+      var note = $('#sticky-note-' + nid);
+      StickyNotes.updateRelativePosition(note);
+      
       pos = self.getStoredData($(this));
       
       $(this)
@@ -872,7 +886,7 @@ Drupal.behaviors.sticky_notes = function(context) {
     // disable dragging
     $(settings.elementsSelector).draggable('destroy');       
   
-    //handler for the window resizing
+    // handler for the window resizing
     var reposition = function() {
       this.old_window = {height: -1, width: -1};
       
