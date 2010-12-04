@@ -1415,7 +1415,7 @@ function sticky_notes_init() {
  */
 
 function sticky_notes_preprocess(&$vars, $hook) {
-  
+
   if ($hook == 'sticky_notes_note') {
     
     global $user;
