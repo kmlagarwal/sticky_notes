@@ -453,7 +453,7 @@ function sticky_notes_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   switch ($op) {
     
     case 'presave':
-      // if title is not set node_form_submit will create a notice abaout
+      // if title is not set node_form_submit will create a notice about
       // access to a property that is not set. This seems to be a bug in
       // node.module
       // to make notes distinguishable on admin pages we set a truncated
@@ -813,7 +813,11 @@ function sticky_notes_insert($node) {
   $node->position_x = 400;
   $node->position_y = 300;
   $node->position_z = sticky_notes_reorder_page_notes($node->link_path, $node->link_pattern);
-  
+  $node->attached_to = serialize(array(
+    'path' => NULL,
+    'left' => NULL,
+    'top' => NULL,
+  ));
   drupal_write_record('node_sticky_note', $node);
   // Tell the parent window to close the modal frame dialog.
   modalframe_close_dialog();
@@ -1424,7 +1428,7 @@ function sticky_notes_init() {
  */
 
 function sticky_notes_preprocess(&$vars, $hook) {
-
+  
   if ($hook == 'sticky_notes_note') {
     
     global $user;

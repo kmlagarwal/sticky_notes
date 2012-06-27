@@ -136,7 +136,7 @@ function sticky_notes_save_js($node, $x, $y, $width, $height) {
     'left' => isset($_GET['left']) ? (int) urldecode($_GET['left']) : NULL,
     'top' => isset($_GET['top']) ? (int) urldecode($_GET['top']) : NULL,
   ));
-
+  
   // assemble the query arguments
   $args = array((int) $x, (int) $y, (int) $width, (int) $height, $attached_to);
 

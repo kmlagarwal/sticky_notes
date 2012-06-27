@@ -4,9 +4,10 @@
  * TODO centralize css class names !
  */
 
-/*
+/**
  * Drupal JS theming
  */
+ 
 Drupal.theme.prototype.sticky_notes_wrapper = function() {
     return '<div id="sticky-notes-wrapper" />';
 };
@@ -44,8 +45,8 @@ Drupal.behaviors.sticky_notes = function(context) {
     minimal_z_index: Drupal.settings.sticky_notes.minimal_z_index,
     visibilityStateMemory: Drupal.settings.sticky_notes.visibility_state_memory,   
     noteDisplayDefaults: {
-      width: parseInt(Drupal.settings.sticky_notes.note_width),
-      height: parseInt(Drupal.settings.sticky_notes.note_height),
+      width: parseInt(Drupal.settings.sticky_notes.note_width, 10),
+      height: parseInt(Drupal.settings.sticky_notes.note_height, 10),
       fontBody:   12,
       fontAuthor: 10,
       lineHeight: 16
@@ -53,7 +54,7 @@ Drupal.behaviors.sticky_notes = function(context) {
     expose: {
        // We want the notes to be squared in exposé mode. 
        // We use the default width as the max note width and height in expose mode
-       noteMaxSize: parseInt(Drupal.settings.sticky_notes.note_width),
+       noteMaxSize: parseInt(Drupal.settings.sticky_notes.note_width, 10),
        // Minimum padding between the notes in expose mode
        minPadding: 20,  /*In pixels*/
        padding: 0.10,    /*Padding in % of note width*/
@@ -106,6 +107,7 @@ Drupal.behaviors.sticky_notes = function(context) {
   };
   
   Main.prepareDOM = function() {
+    
     // make all other major dom elements droppable, but not the sticky notes themselves
   	$("body").children().not(settings.wrapperSelector).not(settings.infoboxWrapperSelector).find('*:visible').droppable({
       accept: settings.elementsSelector,
@@ -123,17 +125,18 @@ Drupal.behaviors.sticky_notes = function(context) {
       },
       drop: function( event, ui ) {
         
-        // get the nid of this note
-  		  var nid = parseInt(ui.draggable.find('span.sticky-note-nid').html(), 10);
-        var note = $('#sticky-note-' + nid);
-
-        $('.sticky-note-hovered').css('outline', 'none').removeClass('sticky-note-hovered');
+        // get the affected note
+        var note = StickyNotes.getNote(parseInt(ui.draggable.find('span.sticky-note-nid').html(), 10));
         
         // get the path to the notes parent object
         var path = Main.getSelectorForElement($(this));
         
-        StickyNotes.storeData(note, path);
-        StickyNotes.saveNote(nid, true);
+        // update the attached info and save
+        note.attachTo(path);
+        
+        // remove all outlining information that was useful during drag
+        $('.sticky-note-hovered').css('outline', 'none').removeClass('sticky-note-hovered');
+        
       }
     });
   };
@@ -145,10 +148,11 @@ Drupal.behaviors.sticky_notes = function(context) {
   };
 
   /* Cookie handling functions
-  *
-  * Taken from the examples at http://www.quirksmode.org/js/cookies.html
-  *
-  */
+   *
+   * Taken from the examples at http://www.quirksmode.org/js/cookies.html
+   *
+   */
+   
   Main.createCookie = function(name, value, days) {
     if (days) {
       var date = new Date();
@@ -177,9 +181,10 @@ Drupal.behaviors.sticky_notes = function(context) {
   };
   
   /**
-  * Recursive helper function to get a jquery selector for the given dom
-  * element.
-  */
+   * Recursive helper function to get a jquery selector for the given dom
+   * element.
+   */
+   
   Main.getSelectorForElement = function(element, path) {
     
     // first time calling
@@ -188,8 +193,9 @@ Drupal.behaviors.sticky_notes = function(context) {
     }
 
     // If this element is <html> we've reached the end of the path.
-    if ( $(element).is('html') )
+    if ( $(element).is('html') ) {
       return 'html ' + path;
+    }
 
     // get the local name, which is the HTML element, e.g. "a" or "div"
     var name  = $(element).attr('localName');
@@ -367,12 +373,11 @@ Drupal.behaviors.sticky_notes = function(context) {
       if (StickyNotes.expose) {
         return;
       }
-      $(settings.elementsSelector).each(function() {
-        // get the note's NID
-        var nid = parseInt($(this).find('span.sticky-note-nid').html(), 10);
-        var note = $('#sticky-note-' + nid);
-        StickyNotes.updateRelativePosition(note, true);
-      });
+      
+      // update the positions of all notes
+      for(nid in StickyNotes.items) {
+        StickyNotes.items[nid].updatePosition();
+      }
     });    
   };  
   
@@ -420,45 +425,28 @@ Drupal.behaviors.sticky_notes = function(context) {
     this.zIndex = settings.minimal_z_index;
 
     $(settings.elementsSelector).each(function() {
+      
       //get the note's NID
       var nid = parseInt($(this).find('span.sticky-note-nid').html(), 10);
       
-      /*
-       * save the initial element positions
-       */
-      self.initRelativePosition(nid, true);
-       
-      /*
-       * find the one with the highest z-index and store the z-index
-       */
+      // register the note
+      self.items[nid] = new Note(this);
+      
+      // find the one with the highest z-index and store the z-index
       if ($(this).css('z-index') > self.zIndex) {
         self.zIndex = $(this).css('z-index');
       }
       
-      /*
-       * make sure that a note the user clicks on will pop up immediately
-       */
+      // make sure that a note the user clicks on will pop up immediately
       $(this).click(function() {
         if (self.zIndex > $(this).css('z-index')) { //Put note on top
           $(this).css('z-index', ++self.zIndex);
         }
-        
-        if ($(this).hasClass('ui-draggable')) {
-          self.saveNote(nid);
-        }
       });
-      
-      self.makeDraggable(this);
-      
-      if (settings.resizable) { 
-        self.makeResizable(this);
-      };
       
     });
       
-    /*
-     * Attach destination string to all actions, so that we have a context for the node form
-     */
+    // Attach destination string to all actions, so that we have a context for the node form
     $('.sticky-notes-note-item-actions a').each(function() {
       $(this).attr('href', $(this).attr('href') + settings.query);
     });
@@ -471,41 +459,13 @@ Drupal.behaviors.sticky_notes = function(context) {
   };
   
   StickyNotes.getNote = function(nid) {
-    return $('#sticky-note-' + nid);
-  };
-  
-  StickyNotes.makeResizable = function(element) {
-    var self = this;
-    $(element).resizable({
-      containment: 'document',
-      alsoResize:  '#' + $(element).attr('id') + ' .sticky-notes-note-item',
-      stop: function(event, ui) {
-        var nid = parseInt(ui.helper.find('span.sticky-note-nid').html(), 10);
-        self.saveNote(nid);
-      }
-    });
-  };
-  
-  
-  StickyNotes.makeDraggable = function(element) {
-    var self = this;
-    $(element).draggable({
-      containment:'document',
-      start: function(e,ui){ 
-        if (self.zIndex > ui.helper.css('z-index')) {
-          ui.helper.css('z-index', ++self.zIndex); 
-        }
-      },
-      stop: function(e,ui){
-        var nid = parseInt(ui.helper.find('span.sticky-note-nid').html(), 10);
-        self.saveNote(nid);
-      }
-    });
+    return StickyNotes.items[nid];
   };
   
   /**
    * Small wrapper function to set the visibility of the notes
    */
+   
   StickyNotes.setVisibility = function(visible, update_cookie) {
     visible = settings.toggleVisibilityState ? visible : true;
     
@@ -523,185 +483,11 @@ Drupal.behaviors.sticky_notes = function(context) {
       Main.createCookie('sticky_notes_visibility', visible ? 'visible' : 'hidden', settings.visibility_state_memory);
     }
   };
-
-
-  /**
-   * Save the given positions for the given node nid, the handling of the
-   * z-index happens on the server side, in assumption that the given node must
-   * be the one on the top
-   */
-  StickyNotes.saveNote = function(nid, force) {
-    
-    var note = $('#sticky-note-' + nid);
-    if (note.length == 0) return; //invalid nid
-    
-    var status = this.storeData(note);
-    
-    if (!status.posChanged && !status.zIndexChanged && (typeof force == 'undefined' || force == false)) {
-      // nothing has changed since the last storage, so don't send anything to the server
-      return;
-    }
-    
-    var args = {
-      z:      Number(status.zIndexChanged),
-      parent: status.data.path,
-      top:    status.data.top_rel,
-      left:   status.data.left_rel
-    };
-    
-    $.get(settings.callbacks.save 
-            + '/' + nid 
-            + '/' + status.data.left 
-            + '/' + status.data.top
-            + '/' + status.data.width
-            + '/' + status.data.height,
-          args
-    );
-  };
-
-
-  /**
-   * Stores the note's current position, size and z-index
-   * 
-   * @param note
-   *  jQuery wrapper with the DOM element
-   *  
-   * @return object
-   *  {posChanged: BOOL, zIndexChanged: BOOL, data: Array}
-   */
-  StickyNotes.storeData = function(note, path) {
-    
-    if (typeof path == 'undefined' || $(path).length != 1) {
-      path = note.data('path') ? note.data('path') : settings.containerSelector;
-    }
-    
-    // get the parents offset
-    parent_offset = $(path).offset();
-    
-    // get the note's current position, size and zIndex
-    var pos = {
-        top:      note.css('top').replace('px', ''),
-        left:     note.css('left').replace('px', ''),
-        width:    note.css('width').replace('px', ''),
-        height:   note.css('height').replace('px', ''),
-        zIndex:   note.css('z-index'),
-        path:     path,
-        top_rel:  note.css('top').replace('px', '') - parent_offset.top,
-        left_rel: note.css('left').replace('px', '') - parent_offset.left
-      };
-    
-    // get the last stored data for this note
-    var stored = this.getStoredData(note);
-    
-    // determine the changes since the note was last stored
-    var returnObj = {
-        posChanged: ((pos.left      != stored.left) ||
-                     (pos.top       != stored.top) ||
-                     (pos.width     != stored.width) ||
-                     (pos.height    != stored.height) ||
-                     (pos.path      != stored.path)),
-        zIndexChanged: (pos.zIndex  != stored.zIndex)
-    };
-    
-    // store if necessary
-    if (returnObj.posChanged) {
-      note.data('top',      pos.top);
-      note.data('left',     pos.left);
-      note.data('width',    pos.width);
-      note.data('height',   pos.height);
-      note.data('path',     pos.path);
-      note.data('top_rel',  pos.top_rel);
-      note.data('left_rel', pos.left_rel);
-    }
-    
-    if (returnObj.zIndexChanged) {
-      note.data('zIndex',   pos.zIndex);
-    }
-    
-    // return also the current positions in case they are needed
-    returnObj.data = pos;
-    
-    return returnObj;
-  };  
-  
-  
-  /**
-   * gets the position store in the note's 'data' jQuery container
-   * 
-   * @param note
-   *  jQuery wrapper with the DOM element
-   *  
-   * @return object
-   *  {...}
-   */
-  StickyNotes.getStoredData = function(note) {
-    
-    return {
-      left:     note.data('left'),
-      top:      note.data('top'),
-      width:    note.data('width'),
-      height:   note.data('height'),
-      zIndex:   note.data('zIndex'),
-      path:     note.data('path'),
-      top_rel:  note.data('top_rel'),
-      left_rel: note.data('left_rel')
-    };
-    
-  }
-  
-  /**
-  * Initialize the relative position of the given note
-  */
-  StickyNotes.initRelativePosition = function(nid, move) {
-    
-    var note = $('#sticky-note-' + nid);
-    
-    // get the path of the element that this note is attached to if any
-    var parent_path = $(note).find('.sticky-note-parent-path').html();
-    
-    if (parent_path) {
-      parent_path = parent_path.replace(/&gt;/g, '>')
-    }
-    
-    if (!parent_path || $(parent_path).length != 1) {
-      parent_path = settings.containerSelector;
-    }
-    
-    note.data('path', parent_path);
-    note.data('top_rel', parseInt($(note).find('.sticky-note-parent-top').html(), 10));
-    note.data('left_rel', parseInt($(note).find('.sticky-note-parent-left').html(), 10));
-    
-    this.updateRelativePosition(note, move);
-    
-    // return the object that defines this relation
-    this.storeData(note, parent_path);
-    
-  };
-  
-  StickyNotes.updateRelativePosition = function(note, move) {
-    
-    // get the parents offset
-    var parent_offset = $(note.data('path')).offset();
-    
-    // calculate the resulting position on the screen
-    var top = parent_offset.top + note.data('top_rel');
-    var left = parent_offset.left + note.data('left_rel');
-    
-    if (typeof move == 'undefined') {
-      note.data('top', top);
-      note.data('left', left);
-    }
-    else {
-      // move the note to the according position so that it appears relative to
-      // it's semantical parent
-      $(note).css('top', top);
-      $(note).css('left', left);
-    }
-  }
   
   /**
    * Show all sticky notes
    */
+   
   StickyNotes.showAll = function() {
     $('#sticky-notes-options-display-normal').hide();
     $('#sticky-notes-options-display-hidden').show();
@@ -710,8 +496,9 @@ Drupal.behaviors.sticky_notes = function(context) {
   
   
   /**
-  * Hide all sticky notes
-  */
+   * Hide all sticky notes
+   */
+  
   StickyNotes.hideAll = function() {
     $(this.wrapper).hide();
     $('#sticky-notes-options-display-normal').show();
@@ -719,70 +506,35 @@ Drupal.behaviors.sticky_notes = function(context) {
   };
   
   
-  /*
+  /**
    * Move the sticky notes to their positions, as set by the user
    * Also make sure they have the right size, since this function also gets
    * called when leaving the expose mode.
    */
+   
   StickyNotes.showPositioned = function(speed) {
+    
     var self = this;
-    var pos;
     
     if (typeof speed != 'string') { speed = 'slow'; }
     
-    $(settings.elementsSelector).each(function() {
-      
-      var nid = parseInt($(this).find('span.sticky-note-nid').html(), 10);
-      var note = $('#sticky-note-' + nid);
-      StickyNotes.updateRelativePosition(note);
-      
-      pos = self.getStoredData($(this));
-      
-      $(this)
-        .animate({
-          left: pos.left,
-          top: pos.top,
-          width: pos.width,
-          height: pos.height
-        },speed)
-        .find('.sticky-notes-note-item')
-        .animate({
-          width: pos.width - 4,
-          height: pos.height - 4
-        },speed);
-      
-      $(this)
-        .find('.sticky-notes-note-item-body')
-        .animate({
-          fontSize: settings.noteDisplayDefaults.fontBody, 
-          lineHeight: settings.noteDisplayDefaults.lineHeight
-        }, speed);
-      
-      $(this)
-        .find('.sticky-notes-note-item-author')
-        .animate({
-          fontSize: settings.noteDisplayDefaults.fontAuthor
-        });
-      
-      // make draggable and resizable
-      self.makeDraggable(this);
-      if (settings.resizable) { 
-        self.makeResizable(this);
-      };
-    });
+    for (nid in StickyNotes.items) {
+      StickyNotes.items[nid].reset(speed);
+    }
 
     $('#sticky-notes-overlay').hide();
     Infobox.enableOptions();
   };  
   
 
-  /*
+  /**
    * Create the overlay if it doesn't exist
    * 
    * The overlay is appended to the notes container. 
    * In a perfect world, it would be appended to the body, but in our case this
    * would place the notes under the overlay, not over it.
    */
+   
   StickyNotes.setOverlay = function() {
 
     function ie_set_overlay_positionning() {
@@ -808,7 +560,7 @@ Drupal.behaviors.sticky_notes = function(context) {
      * IE <= 6.0 ignore the 'position: fixed' css property
      * We have to position the overlay using position absolute and a few JS event handlers
      */
-    if (($.browser.msie) && (parseInt($.browser.version) < 7)) {
+    if (($.browser.msie) && (parseInt($.browser.version, 10) < 7)) {
       var containerOffset = $('body').offset();
       
       $('#sticky-notes-overlay').css({position: 'absolute'});
@@ -837,7 +589,7 @@ Drupal.behaviors.sticky_notes = function(context) {
   
   StickyNotes.showOverlay = function() {
     $('#sticky-notes-overlay').show();
-    if (($.browser.msie) && (parseInt($.browser.version) < 7)) {
+    if (($.browser.msie) && (parseInt($.browser.version, 10) < 7)) {
       $(window).resize(); /* Update the overlay's dimensions */
     }
     return $('#sticky-notes-overlay');
@@ -898,13 +650,13 @@ Drupal.behaviors.sticky_notes = function(context) {
   
   
   
-  StickyNotes.positionGrid = function(reset,animation_speed) {
+  StickyNotes.positionGrid = function(reset, animation_speed) {
   
     var self = this;
     
     //Current window dimensions
-    var window_width = $(window).width() - 2*settings.expose.windowPadding;
-    var window_height = $(window).height() - 2*settings.expose.windowPadding;    
+    var window_width = $(window).width() - 2 * settings.expose.windowPadding;
+    var window_height = $(window).height() - 2 * settings.expose.windowPadding;    
     var vertical_offset = $(window).scrollTop() - $('#sticky-notes-wrapper').offset().top + settings.expose.windowPadding;
     var horizontal_offset = $(window).scrollLeft() - $('#sticky-notes-wrapper').offset().left + settings.expose.windowPadding;    
     
@@ -977,8 +729,8 @@ Drupal.behaviors.sticky_notes = function(context) {
       //compute the reduction so that all the notes fit in the window, no magnifying allowed
       //The padding remains constant in this mode
       var reduction = Math.min(
-          Math.min( window_width/(cols * (settings.expose.noteMaxSize + 2*settings.expose.minPadding)), 
-                    window_height/(rows * (settings.expose.noteMaxSize + 2*settings.expose.minPadding)))
+          Math.min( window_width/(cols * (settings.expose.noteMaxSize + 2 * settings.expose.minPadding)), 
+                    window_height/(rows * (settings.expose.noteMaxSize + 2 * settings.expose.minPadding)))
           , 1);
   
       var noteSize = reduction * settings.expose.noteMaxSize;
@@ -997,7 +749,6 @@ Drupal.behaviors.sticky_notes = function(context) {
       };  
     }
     
-    
     /*
      * Compare the positions with the old ones
      */
@@ -1010,7 +761,6 @@ Drupal.behaviors.sticky_notes = function(context) {
         this.grid_data = grid;
         return true;
       }
-      
       
       for(var x in grid) {
         if (grid[x] == this.grid_data[x]) continue;
@@ -1031,7 +781,6 @@ Drupal.behaviors.sticky_notes = function(context) {
       
     }
     
-    
     //don't move notes if the positions haven't changed
     if (!reset && !grid_changed(grid)) return;
     
@@ -1040,7 +789,7 @@ Drupal.behaviors.sticky_notes = function(context) {
     var left = 0;
     var top = 0;
     
-    $(settings.elementsSelector).each(function() {
+    for (nid in StickyNotes.items) {
     
       // switch row
       if (col/grid.cols == 1) {
@@ -1048,52 +797,358 @@ Drupal.behaviors.sticky_notes = function(context) {
         row++;
       }
       
-      left = horizontal_offset + grid.h_offset + col*(grid.nSize + 2*grid.nPadding) + grid.nPadding;
+      left = horizontal_offset + grid.h_offset + col * (grid.nSize + 2 * grid.nPadding) + grid.nPadding;
       if (row == (grid.rows - 1)) {
         left = left + grid.lastRowPadding;
       }
-      top = vertical_offset + grid.v_offset + row*(grid.nSize + 2*grid.nPadding) + grid.nPadding;
+      top = vertical_offset + grid.v_offset + row * (grid.nSize + 2 * grid.nPadding) + grid.nPadding;
       
-      // and trigger the animation
-      $(this).animate({
-        left: left,
-        top: top,
-        width: grid.nSize,
-        height: grid.nSize
-      }, animation_speed).find('.sticky-notes-note-item').animate({
-        width: grid.nSize,
-        height: grid.nSize
-      }, animation_speed).find('.sticky-notes-note-item-body').animate({
-        fontSize: grid.bodyFontSize,
-        lineHeight: grid.lineHeight
-      }, animation_speed);
-    
-      $(this).find('.sticky-notes-note-item-author').animate({
-        fontSize: grid.authorFontSize
-      }, animation_speed);
+      StickyNotes.items[nid].animate(animation_speed, {
+        outer: {
+          left: left,
+          top: top,
+          width: grid.nSize,
+          height: grid.nSize
+        },
+        inner: {
+          width: grid.nSize,
+          height: grid.nSize
+        },
+        body: {
+          fontSize: grid.bodyFontSize,
+          lineHeight: grid.lineHeight
+        },
+        footer: {
+          fontSize: grid.authorFontSize
+        }
+      });
     
       col++;         
-    });
+    };
   };  
   
+  /**
+  * The note object
+  */
+  
+  Note = function(element) {
+    
+    // some basic attributes
+    this.nid = parseInt($(element).find('span.sticky-note-nid').html(), 10);
+    this.element = $(element);
+    this.visible = false;
+    this.collapsed = false;
+    this.updated = false;
+    
+    // position attributes
+    this.top = null;
+    this.left = null;
+    this.width = null;
+    this.height = null;
+    this.attached = {path: null, top: null, left: null};
+    
+    /**
+     * load a note and initialize it's attributes
+     */
+    
+    this.load = function() {
+      
+      // get the path of the element that this note is attached to if any
+      var path = $(this.element).find('.sticky-note-parent-path').html();
+      if (path) {
+        path = path.replace(/&gt;/g, '>');
+      }
+      
+      this.attached = {
+        path : path,
+        top  : parseInt($(this.element).find('.sticky-note-parent-top').html(), 10),
+        left : parseInt($(this.element).find('.sticky-note-parent-left').html(), 10)
+      };
+      
+      this.top = $(this.element).css('top').replace('px', '');
+      this.left = $(this.element).css('left').replace('px', '');
+      this.width = $(this.element).css('width').replace('px', '');
+      this.height = $(this.element).css('height').replace('px', '');
+      
+      this.updatePosition();
+      
+      this.draggable();
+      this.resizable();
+      this.collapsible();
+      
+    };
+    
+    this.show = function() {
+      $(this.element).show();
+    };
+    
+    this.hide = function() {
+      $(this.element).hide();
+    };
+    
+    this.minimize = function() {
+      
+    };
+    
+    /**
+     * Collapse the note
+     */
+    
+    this.collapse = function(speed) {
+      
+      if (typeof speed == 'undefined') {
+        speed = 'fast';
+      }
+      
+      if (!this.collapsed) {
+        $(this.element).find('.sticky-notes-note-item-body-wrapper').hide();
+        $(this.element).find('.sticky-notes-note-item-author-wrapper').hide();
+        $(this.element).find('.sticky-notes-note-item').animate({height: 15}, speed);
+        $(this.element).animate({height: 15}, speed);
+        this.resizable("destroy");
+      }
+      else {
+        $(this.element).animate({height: this.height}, speed);
+        $(this.element).find('.sticky-notes-note-item').animate({height: this.height}, speed);
+        $(this.element).find('.sticky-notes-note-item-body-wrapper').show();
+        $(this.element).find('.sticky-notes-note-item-author-wrapper').show();
+        this.resizable();
+      }
+      this.collapsed = !this.collapsed;
+    };
+    
+    /**
+     * Move the note where it should be
+     */
+    
+    this.move = function() {
+      this.updated = $(this.element).css('top').replace('px', '') != this.top || $(this.element).css('left').replace('px', '') !=  this.left;
+      if (this.updated) {
+        this.moveTo(this.left, this.top);
+        this.save();
+      }
+    };
+    
+    /**
+     * Move the note to the specified coordinates
+     */
+    
+    this.moveTo = function(x, y) {
+      this.updated = true;
+      $(this.element).css('top', y + 'px');
+      $(this.element).css('left', x + 'px');
+    };
+    
+    /**
+     * Save the notes attributes
+     */
+    
+    this.save = function() {
+      
+      if (!this.updated) {
+        // nothing has changed since the last storage, so don't send anything to the server
+        return;
+      }
+      
+      var args = {
+        z:      1,
+        parent: this.attached.path,
+        top:    this.attached.top,
+        left:   this.attached.left
+      };
+      
+      url_args = [this.nid, this.left, this.top, this.width, this.height];
+      
+      $.get(settings.callbacks.save + '/' + url_args.join('/'), args);
+      
+      this.updated = false;
+    };
+    
+    /**
+     * Attach this note to the DOM element with the given xpath
+     */
+     
+    this.attachTo = function(path) {
+      var parent_offset = $(path).offset();
+      this.attached = {
+        path : path,
+        top  : $(this.element).css('top').replace('px', '') - parent_offset.top,
+        left : $(this.element).css('left').replace('px', '') - parent_offset.left
+      };
+      this.updatePosition();
+      this.updated = true;
+      this.save();
+    };
+    
+    /**
+     * Update the position of the note
+     */
+    
+    this.updatePosition = function() {
+      
+      // get the absolute positions of the parent element if there is a parent
+      if (this.attached.path.length > 0 && $(this.attached.path).length == 1) {
+        
+        // get the parents offset
+        var parent_offset = $(this.attached.path).offset();
+        
+        // calculate the resulting position on the screen
+        this.top = parent_offset.top + this.attached.top;
+        this.left = parent_offset.left + this.attached.left;
+        
+      }
+      else {
+        
+        // calculate the resulting position on the screen
+        this.top = $(this.element).css('top').replace('px', '');
+        this.left = $(this.element).css('left').replace('px', '');
+        
+      }
+      
+      this.move();
+      
+    }
+    
+    /**
+     * Make this note draggable
+     */
+    
+    this.draggable = function(destroy) {
+      
+      if (typeof destroy != 'undefined') {
+        $(this.element).draggable("destroy");
+      }
+      else {
+        var self = this;
+        $(self.element).draggable({
+          containment:'document',
+          start: function(e,ui){ 
+            if (StickyNotes.zIndex > ui.helper.css('z-index')) {
+              ui.helper.css('z-index', ++StickyNotes.zIndex); 
+            }
+          },
+        });
+      }
+    };
+    
+    /**
+     * Make this note resizable
+     */
+    
+    this.resizable = function(destroy) {
+      
+      if (!settings.resizable) {
+        return;
+      }
+      
+      if (typeof destroy != 'undefined') {
+        $(this.element).resizable("destroy");
+      }
+      else {
+        var self = this;
+        $(self.element).resizable({
+          containment: 'document',
+          alsoResize:  '#' + $(self.element).attr('id') + ' .sticky-notes-note-item',
+          stop: function(event, ui) {
+            self.updated = true;
+            // save the current height and width
+            self.width = $(self.element).css('width').replace('px', '');
+            self.height = $(self.element).css('height').replace('px', '');
+            self.save();
+          }
+        });
+      }
+      
+    };
+    
+    /**
+    * Make the note collapsible
+    */
+    
+    this.collapsible = function(destroy) {
+      
+      if (typeof destroy != 'undefined') {
+        $(this.element).find('.sticky-notes-note-item-header').unbind('dblclick');
+      }
+      else {
+        var self = this;
+        $(this.element).find('.sticky-notes-note-item-header').dblclick(function () {
+          self.collapse();
+        });
+      }
+    };
+    
+    /**
+     * Animate the note with the given options or defaults
+     */
+    
+    this.animate = function(speed, options) {
+      
+      var outer = (typeof options != 'undefined' && options.outer) || {
+        left: this.left,
+        top: this.top,
+        width: this.width,
+        height: this.height
+      };
+      
+      var inner = (typeof options != 'undefined' && options.inner) || {
+        width: this.width - 4,
+        height: this.height - 4
+      };
+      
+      var body = (typeof options != 'undefined' && options.body) || {
+        fontSize: settings.noteDisplayDefaults.fontBody, 
+        lineHeight: settings.noteDisplayDefaults.lineHeight
+      };
+      
+      var footer = (typeof options != 'undefined' && options.footer) || {
+        fontSize: settings.noteDisplayDefaults.fontAuthor
+      };
+      
+      $(this.element).animate(outer, speed).find('.sticky-notes-note-item').animate(inner, speed);
+      $(this.element).find('.sticky-notes-note-item-body').animate(body, speed);
+      $(this.element).find('.sticky-notes-note-item-author').animate(footer);
+      
+    };
+    
+    /**
+     * Reset position, width, and font sizes for this note
+     */
+    
+    this.reset = function(speed) {
+      
+      // animate to original parameters (position, size, ...)
+      this.animate();
+      
+      // make draggable and resizable
+      this.draggable();
+      this.resizable();
+      
+    };
+    
+    this.load();
+    
+  };
 
-  /*
-   * Set the page up for stickyNote display
+  /**
+   * Set the page up for StickyNote display
    */
+   
   StickyNotes.bootstrap();
   
   /**
-  * Make some adjustments to the dom, e.g. make all elements droppable so that
-  * notes can be attached to them.
-  */
+   * Make some adjustments to the dom, e.g. make all elements droppable so that
+   * notes can be attached to them.
+   */
+   
   Main.prepareDOM();
   
-  /*
+  /**
    * Loading the infoBox launches a reload of all the available notes for this page.
    */
+   
   Infobox.load();
   
   // mark this page as processed
   $('body').addClass('sticky-notes-enabled');    
 };
-  
