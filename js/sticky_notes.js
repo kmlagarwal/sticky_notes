@@ -987,7 +987,7 @@ Drupal.behaviors.sticky_notes = function(context) {
     this.updatePosition = function() {
       
       // get the absolute positions of the parent element if there is a parent
-      if (this.attached.path.length > 0 && $(this.attached.path).length == 1) {
+      if (this.attached.path != null && this.attached.path.length > 0 && $(this.attached.path).length == 1) {
         
         // get the parents offset
         var parent_offset = $(this.attached.path).offset();
